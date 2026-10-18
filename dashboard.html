@@ -79,7 +79,7 @@
 <body>
 <div class="header">
   <h1>Jeff Analytics — MerchantBots</h1>
-  <div class="updated">Updated 18 Oct 2026, 12:12 PM IST</div>
+  <div class="updated">Updated 18 Oct 2026, 6:13 PM IST</div>
 </div>
 
 <!-- Section 1: Goal Pacing Banner -->
@@ -116,7 +116,7 @@
     <div class="progress"><div class="progress-fill fill-red" style="width: 28.50%"></div></div>
     <span class="badge red">29% · BEHIND</span>
   </div>
-  <!-- values unchanged from the 12:17 AM build: zero new MB CRM activity in the ~12h gap, Sun Oct 18 being a weekend day with no sends (confirmed via fresh queries below, not carried forward) -->
+  <!-- values unchanged from the 12:12 PM build: zero new MB CRM activity in the ~6h gap, Sun Oct 18 being a weekend day with no sends (confirmed via fresh queries below, not carried forward) -->
 </div>
 
 <!-- Tabs -->
@@ -236,8 +236,8 @@
 
 <script>
 // ============= DATA =============
-// All figures pulled fresh from the Jeff Analytics MCP this build (cloud routine, ran ~12:02-12:12 IST
-// Sunday Oct 18 2026). Never carried forward from the prior build (12:17 AM IST Oct 18) — every query below
+// All figures pulled fresh from the Jeff Analytics MCP this build (cloud routine, ran ~18:02-18:13 IST
+// Sunday Oct 18 2026). Never carried forward from the prior build (12:12 PM IST Oct 18) — every query below
 // was re-run live this turn, including smartlead_metric_definitions. genuine_replies / genuine_reply_rate /
 // genuine_replies_email_1 remain permanently absent (EQU-650 merged genuine + auto_reply into a single
 // "reply" class) — confirmed again via a live smartlead_metric_definitions call this build. total_replies /
@@ -246,9 +246,9 @@
 // crm_positive_reply_rate, crm_booking_rate and reply_to_crm_positive_rate are rejected by the API when
 // filtered by client_id (same as every recent build), so every rate on this dashboard is computed
 // client-side from raw counts, per spec.
-// WEEKEND RULE: today (Oct 18) is a Sunday, same calendar week as the 12:17 AM build which already applied
+// WEEKEND RULE: today (Oct 18) is a Sunday, same calendar week as the 12:12 PM build which already applied
 // the spec's Saturday rule to this same week. No sending happens Sat or Sun (confirmed again this build: Oct
-// 17 shows 1 stray email and 0 email_1 sends; Oct 18 still has 0 rows at noon IST), so the Saturday rule's
+// 17 shows 1 stray email and 0 email_1 sends; Oct 18 still has 0 rows at 18:02 IST), so the Saturday rule's
 // rationale ("complete for sending purposes") applies identically on this Sunday build. Extending it: the
 // current Mon-Sun (Oct 12-18) is treated as the most recent COMPLETE week for the Weekly Review table
 // (3A/3B/3C), not tagged "(partial)" below. This does NOT apply to Section 3D's Series Performance "Current
@@ -259,17 +259,21 @@
 // activity-mode queries over the identical windows returned cleanly every time. Same failure mode as every
 // recent build — falling back to activity-only with the standard notice.
 const cohortAvailable = false;
-// WINDOW: this build ran ~12:02-12:12 IST Sunday Oct 18, about 12 hours after the 12:17 AM Oct 18 build.
+// WINDOW: this build ran ~18:02-18:13 IST Sunday Oct 18, about 6 hours after the 12:12 PM Oct 18 build.
 // "Yesterday" is still Oct 17 (Sat) and the Weekly-Review current week is Mon Oct 12 - Sun Oct 18 (weekend
 // rule: treated as complete). The Series Performance / goal-banner "current week" is Mon Oct 12 - today
 // Oct 18 (day 7/7).
 // MB week-to-date (day 7/7, goal banner, Oct 12-18 daily CRM sum): 4/30 meetings (13% · BEHIND) and 30/100
-// positive replies (30% · BEHIND) — both RED, both exactly unchanged from the 12:17 AM Oct 18 build (zero
-// new CRM activity in the ~12h gap, reconfirmed via fresh independent queries, not carried forward — Oct 18
-// still has 0 rows as of this build).
+// positive replies (30% · BEHIND) — both RED, both exactly unchanged from the 12:12 PM Oct 18 build (zero
+// net new CRM activity in the ~6h gap at the weekly-total level, reconfirmed via fresh independent queries,
+// not carried forward — Oct 18 still has 0 rows as of this build). Note: one Oct 16 CRM positive reply was
+// retroactively attributed between builds (daily Oct 16 pos moved 3→4), but it nets out of the weekly total
+// because the 12:12 PM build's own weekly-sum query had already picked it up (30) even though its daily
+// table had not yet — this build's fresh daily AND weekly queries now agree at pos=4 for Oct 16 / 30 for the
+// week, zero drift, see RECONCILIATION below.
 // October MTD (day 12/22 weekdays — Oct 17-18 are weekend, so the weekday counter is unchanged from the
 // prior build): 28/120 meetings (ratio (28/120)/(12/22) = 0.428 → RED BEHIND) and 114/400 positive replies
-// (ratio (114/400)/(12/22) = 0.5225 → RED BEHIND). Both unchanged from the 12:17 AM build. All four goal
+// (ratio (114/400)/(12/22) = 0.5225 → RED BEHIND). Both unchanged from the 12:12 PM build. All four goal
 // tiles still BEHIND.
 // CROSS-CHECK: independent granularity=all Oct 1-18 pull = 114 pos / 28 meet, matching the goal banner
 // exactly.
@@ -277,12 +281,10 @@ const cohortAvailable = false;
 // crm_meetings_booked to the matching Weekly Review total for all 5 Series Performance toggle windows this
 // build (current week Oct 12-18: 24,001 prospects / 30 pos / 4 meet — exact; Last 1: 26,069 / 31 / 13 —
 // exact; Last 2: 49,765 / 99 / 28 — exact; Last 3: 66,153 / 135 / 40 — exact; Last 4: 83,170 / 154 / 49 —
-// exact). total_replies shows a small pre-existing drift under series grouping on the Sep 14 - Oct 4 weeks
-// specifically (Last 2 sums 30 replies short of the weekly total, Last 3 63 short, Last 4 85 short; the
-// current week and Last 1 week both reconcile exactly on total_replies too) — same class of known small
-// series-grain drift noted in recent builds, isolated here to the Sep 14-Oct 4 span; not investigated
-// further this build since it doesn't affect any number actually rendered on the dashboard (Weekly Review
-// totals come straight from the weekly query, never summed from series rows).
+// exact). Small single-digit replies_email_1 / smtp_bounces deltas vs the 12:12 PM build showed up only in
+// the still-open current week (e.g. current-week e1r 799→800, 11B sub-series re1 641→642, Jeff current-week
+// bounces 400→409) — expected drift on a week that's still receiving async bounce NDRs and reply-category
+// updates; every fully-closed historical week reproduced byte-for-byte identical to the prior build.
 // ANOMALY — EMAIL 3 NEVER SENDS: email_3_sent reads exactly 0 for all 16 days in the Sequence Step
 // Breakdown window (Oct 2 - Oct 17), confirmed via a direct query re-run this build. This has now read 0 on
 // every build for multiple weeks running — worth a direct look at whether the step-3 touch has been fully
@@ -322,7 +324,7 @@ const dailyActivity = [
   {d:"2026-10-13",dow:"Tue",prospects:4316,emails:9439, replies:215,e1s:4316,e1r:143,pos:5, meet:0},
   {d:"2026-10-14",dow:"Wed",prospects:4478,emails:9476, replies:235,e1s:4478,e1r:166,pos:4, meet:3},
   {d:"2026-10-15",dow:"Thu",prospects:6613,emails:10888,replies:250,e1s:6613,e1r:201,pos:7, meet:0},
-  {d:"2026-10-16",dow:"Fri",prospects:5696,emails:11186,replies:209,e1s:5696,e1r:151,pos:3, meet:0},
+  {d:"2026-10-16",dow:"Fri",prospects:5696,emails:11186,replies:209,e1s:5696,e1r:151,pos:4, meet:0},
   {d:"2026-10-17",dow:"Sat",prospects:0,   emails:1,    replies:24, e1s:0,   e1r:0,  pos:0, meet:0},
 ];
 
@@ -347,7 +349,7 @@ const sequence = [
   {d:"2026-10-13",dow:"Tue",e1:4316,e2:5118,e3:0,pos:5},
   {d:"2026-10-14",dow:"Wed",e1:4478,e2:4975,e3:0,pos:4},
   {d:"2026-10-15",dow:"Thu",e1:6613,e2:4266,e3:0,pos:7},
-  {d:"2026-10-16",dow:"Fri",e1:5696,e2:5486,e3:0,pos:3},
+  {d:"2026-10-16",dow:"Fri",e1:5696,e2:5486,e3:0,pos:4},
   {d:"2026-10-17",dow:"Sat",e1:0,   e2:0,   e3:0,pos:0},
 ];
 
@@ -359,7 +361,7 @@ const sequence = [
 // post-transition).
 // Fields: w (Mon), partial, prospects, unique, emails, e1s, replies, e1r, bounces, pos, meet
 const weeklyActivity = [
-  {w:"2026-10-12",partial:false,prospects:24001,unique:23985,emails:50382,e1s:24001,replies:1064,e1r:799, bounces:1010,pos:30, meet:4},
+  {w:"2026-10-12",partial:false,prospects:24001,unique:23985,emails:50382,e1s:24001,replies:1064,e1r:800, bounces:1010,pos:30, meet:4},
   {w:"2026-10-05",partial:false,prospects:26069,unique:25311,emails:50802,e1s:26069,replies:1223,e1r:1022,bounces:782, pos:31, meet:13},
   {w:"2026-09-28",partial:false,prospects:23696,unique:21219,emails:41086,e1s:23696,replies:830, e1r:691, bounces:782, pos:68, meet:15},
   {w:"2026-09-21",partial:false,prospects:16388,unique:11765,emails:29561,e1s:16388,replies:661, e1r:563, bounces:439, pos:36, meet:12},
@@ -391,7 +393,7 @@ const weeklyCohort = [];
 const seriesByView = {
   cur: { label: "Current week (partial) — Oct 12 – Oct 18", rows: [
     {series:"6", sub:"E",r:8161, e:16799,tr:242,re1:158,sb:266,pos:13,meet:3},
-    {series:"11",sub:"B",r:15811,e:33273,tr:807,re1:641,sb:741,pos:14,meet:0},
+    {series:"11",sub:"B",r:15811,e:33273,tr:807,re1:642,sb:741,pos:14,meet:0},
     {series:"11",sub:"C",r:0,    e:0,    tr:3,  re1:0, sb:0,  pos:0, meet:0},
     {series:"13",sub:"F",r:29,   e:310,  tr:12, re1:0, sb:3,  pos:3, meet:1},
   ]},
@@ -426,7 +428,7 @@ const seriesByView = {
 // Jeff clients weekly (activity) — last 4 complete weeks + current partial week (Oct 12 - Oct 18). No
 // weekend-rule carve-out in this section's spec, so the current week keeps its "(partial)" tag.
 const jeffWeekly = [
-  {w:"2026-10-12",partial:true, prospects:9264, emails:18777,e1s:9264, replies:407,e1r:326,bounces:400,pos:2,meet:0},
+  {w:"2026-10-12",partial:true, prospects:9264, emails:18777,e1s:9264, replies:408,e1r:326,bounces:409,pos:2,meet:0},
   {w:"2026-10-05",partial:false,prospects:10238,emails:20998,e1s:10238,replies:489,e1r:402,bounces:355,pos:6,meet:3},
   {w:"2026-09-28",partial:false,prospects:11925,emails:22837,e1s:11925,replies:609,e1r:519,bounces:418,pos:5,meet:0},
   {w:"2026-09-21",partial:false,prospects:9157, emails:21153,e1s:9157, replies:441,e1r:343,bounces:300,pos:9,meet:2},
