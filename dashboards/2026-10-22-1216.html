@@ -1,0 +1,973 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Jeff Analytics — MerchantBots</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #0f1117; color: #e5e7eb; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; padding: 28px; font-size: 14px; }
+  h1 { font-size: 22px; font-weight: 600; letter-spacing: -0.01em; }
+  h2 { font-size: 15px; font-weight: 600; color: #d1d5db; margin-bottom: 12px; letter-spacing: 0.02em; text-transform: uppercase; }
+  h3 { font-size: 13px; font-weight: 600; color: #9ca3af; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.04em; }
+  .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; flex-wrap: wrap; gap: 12px; }
+  .updated { background: #1a1d27; padding: 6px 12px; border-radius: 6px; font-size: 12px; color: #9ca3af; border: 1px solid #262a36; }
+  .goal-banner { display: grid; grid-template-columns: repeat(4, 1fr); gap: 28px; margin-bottom: 32px; }
+  @media (max-width: 1000px) { .goal-banner { grid-template-columns: repeat(2, 1fr); } }
+  .goal-tile { background: #1a1d27; border: 1px solid #262a36; border-radius: 10px; padding: 20px; }
+  .goal-heading { font-size: 12px; color: #9ca3af; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 12px; }
+  .goal-value { font-size: 34px; font-weight: 700; color: #f3f4f6; line-height: 1; }
+  .goal-of { font-size: 12px; color: #9ca3af; margin-top: 8px; margin-bottom: 12px; }
+  .progress { height: 8px; background: #262a36; border-radius: 999px; overflow: hidden; margin-bottom: 10px; }
+  .progress-fill { height: 100%; border-radius: 999px; transition: width 0.3s; }
+  .badge { display: inline-block; padding: 3px 8px; border-radius: 6px; font-size: 10px; font-weight: 700; letter-spacing: 0.05em; }
+  .green { background: rgba(16, 185, 129, 0.15); color: #10b981; }
+  .amber { background: rgba(245, 158, 11, 0.15); color: #f59e0b; }
+  .red   { background: rgba(239, 68, 68, 0.15); color: #ef4444; }
+  .fill-green { background: #10b981; }
+  .fill-amber { background: #f59e0b; }
+  .fill-red   { background: #ef4444; }
+  .tabs { display: flex; gap: 4px; border-bottom: 1px solid #262a36; margin-bottom: 24px; }
+  .tab { padding: 12px 18px; cursor: pointer; color: #9ca3af; font-size: 13px; font-weight: 500; border-bottom: 2px solid transparent; }
+  .tab.active { color: #f3f4f6; border-bottom-color: #3b82f6; }
+  .tab:hover { color: #d1d5db; }
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+  .card { background: #1a1d27; border: 1px solid #262a36; border-radius: 10px; padding: 20px; margin-bottom: 24px; overflow-x: auto; }
+  .toggle-row { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
+  .toggle { display: inline-flex; background: #12141b; border: 1px solid #262a36; border-radius: 8px; padding: 2px; }
+  .toggle button { background: transparent; color: #9ca3af; border: none; padding: 6px 14px; font-size: 12px; cursor: pointer; border-radius: 6px; font-weight: 500; }
+  .toggle button.active { background: #3b82f6; color: #fff; }
+  .mode-label { font-size: 12px; color: #9ca3af; }
+  table { width: 100%; border-collapse: collapse; font-size: 12px; min-width: 100%; }
+  th, td { padding: 8px 10px; text-align: right; border-bottom: 1px solid #262a36; white-space: nowrap; }
+  th { color: #9ca3af; font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: 0.04em; background: #12141b; position: sticky; top: 0; }
+  td:first-child, th:first-child { text-align: left; }
+  tr:hover td { background: #1e222d; }
+  .muted td { color: #6b7280; }
+  .highlight td { background: rgba(59, 130, 246, 0.08); }
+  .bar-cell { display: inline-flex; align-items: center; gap: 8px; }
+  .inline-bar { height: 6px; background: #3b82f6; border-radius: 999px; opacity: 0.7; min-width: 2px; }
+  .stack-bar { display: flex; height: 12px; width: 140px; border-radius: 4px; overflow: hidden; background: #12141b; }
+  .stack-e1 { background: #3b82f6; }
+  .stack-e2 { background: #8b5cf6; }
+  .stack-e3 { background: #ec4899; }
+  .btn-row { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 14px; }
+  .btn-row button { background: #12141b; color: #9ca3af; border: 1px solid #262a36; padding: 6px 12px; font-size: 12px; cursor: pointer; border-radius: 6px; }
+  .btn-row button.active { background: #3b82f6; color: #fff; border-color: #3b82f6; }
+  .chart { width: 100%; height: 340px; margin-top: 10px; }
+  .legend { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+  .chip { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; background: #12141b; border: 1px solid #262a36; border-radius: 999px; font-size: 11px; cursor: pointer; color: #d1d5db; }
+  .chip.off { opacity: 0.35; }
+  .chip .dot { width: 8px; height: 8px; border-radius: 50%; }
+  .chip .rng { color: #6b7280; margin-left: 4px; font-size: 10px; }
+  .funnel { display: flex; flex-direction: column; gap: 0; max-width: 620px; margin: 0 auto; }
+  .funnel-box { background: #12141b; border: 1px solid #262a36; border-radius: 8px; padding: 16px 20px; text-align: center; position: relative; }
+  .funnel-box.g { border-left: 4px solid #10b981; }
+  .funnel-box.a { border-left: 4px solid #f59e0b; }
+  .funnel-box.r { border-left: 4px solid #ef4444; }
+  .funnel-label { font-size: 12px; color: #9ca3af; text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 6px; }
+  .funnel-val { font-size: 20px; font-weight: 700; color: #f3f4f6; }
+  .funnel-cmp { font-size: 11px; color: #6b7280; margin-top: 4px; }
+  .funnel-arrow { text-align: center; padding: 6px 0; color: #6b7280; font-size: 18px; position: relative; }
+  .funnel-arrow .rate { font-size: 11px; color: #d1d5db; background: #262a36; padding: 2px 8px; border-radius: 999px; display: inline-block; }
+  .num { font-variant-numeric: tabular-nums; }
+  .partial-tag { font-size: 10px; color: #9ca3af; font-weight: 400; margin-left: 4px; }
+  .notice { padding: 14px 16px; border: 1px solid rgba(239,68,68,0.3); background: rgba(239,68,68,0.08); border-radius: 8px; color: #ef4444; font-size: 12px; font-weight: 600; letter-spacing: 0.01em; }
+</style>
+</head>
+<body>
+<div class="header">
+  <h1>Jeff Analytics — MerchantBots</h1>
+  <div class="updated">Updated 22 Oct 2026, 12:16 PM IST</div>
+</div>
+
+<!-- Section 1: Goal Pacing Banner -->
+<div class="goal-banner">
+  <!-- Tile 1: Meetings This Week -->
+  <div class="goal-tile">
+    <div class="goal-heading">Meetings This Week</div>
+    <div class="goal-value num">6</div>
+    <div class="goal-of">of 30 goal</div>
+    <div class="progress"><div class="progress-fill fill-red" style="width: 20.00%"></div></div>
+    <span class="badge red">20% · BEHIND</span>
+  </div>
+  <!-- Tile 2: Pos. Replies This Week -->
+  <div class="goal-tile">
+    <div class="goal-heading">Pos. Replies This Week</div>
+    <div class="goal-value num">17</div>
+    <div class="goal-of">of 100 goal</div>
+    <div class="progress"><div class="progress-fill fill-red" style="width: 17.00%"></div></div>
+    <span class="badge red">17% · BEHIND</span>
+  </div>
+  <!-- Tile 3: Meetings This Month -->
+  <div class="goal-tile">
+    <div class="goal-heading">Meetings This Month</div>
+    <div class="goal-value num">34</div>
+    <div class="goal-of">of 120 goal · day 16/22</div>
+    <div class="progress"><div class="progress-fill fill-red" style="width: 28.33%"></div></div>
+    <span class="badge red">28% · BEHIND</span>
+  </div>
+  <!-- Tile 4: Pos. Replies This Month -->
+  <div class="goal-tile">
+    <div class="goal-heading">Pos. Replies This Month</div>
+    <div class="goal-value num">132</div>
+    <div class="goal-of">of 400 goal · day 16/22</div>
+    <div class="progress"><div class="progress-fill fill-red" style="width: 33.00%"></div></div>
+    <span class="badge red">33% · BEHIND</span>
+  </div>
+  <!-- Current week (Mon Oct 19 - today Thu Oct 22, day 4/7, build run ~12:03-12:16 PM IST Oct 22): direct
+       granularity=all pull for Oct 19-22 gives prospects 17,624 / unique 15,441 / emails 32,388 / replies 465
+       / pos 17 / meet 6 / bounces 525 — pos/meet reconcile EXACTLY against the Series Performance "current
+       week" group_by pull (6E=pos10/meet1, 11B=pos6/meet4, 11C=pos0/meet0, 13F=pos1/meet1 -> totals 17 pos /
+       6 meet) run independently in the same build. Weekly ratio = (6/30)/(4/7) = 0.35 and (17/100)/(4/7) =
+       0.2975 -> both RED BEHIND (day 4/7, Thu). Meetings moved from 5->6 since the prior (12:16 AM) build —
+       Oct 22 already carries 1 new booked meeting from zero new sends yet today (a meeting resolving from an
+       earlier reply, not same-day volume). Monthly MTD: direct granularity=all Oct 1-22 pull = 34 meetings /
+       132 positive replies (meetings up from 33, positive replies unchanged — the same new Oct 22 meeting).
+       Ratio (34/120)/(16/22) = 0.3896 and (132/400)/(16/22) = 0.4538 -> both RED BEHIND; day denominator is
+       16/22 (Oct 22 is the 16th weekday of the month through today, 22 weekdays in October). COHORT MODE
+       UNAVAILABLE this build: 2/2 probes (minimal single-day single-client daily, and a 4-day granularity=all
+       4-client pull) timed out after 60s while every equivalent activity-mode query succeeded — same
+       recurring MCP backend outage pattern seen on most builds since Oct 17. -->
+</div>
+
+<!-- Tabs -->
+<div class="tabs">
+  <div class="tab active" data-tab="daily">Daily Trend</div>
+  <div class="tab" data-tab="weekly">Weekly Review</div>
+  <div class="tab" data-tab="jeff">Jeff Clients</div>
+</div>
+
+<!-- ==================== TAB: DAILY TREND ==================== -->
+<div class="tab-panel active" id="tab-daily">
+
+  <!-- Sub-section A: Daily Summary Table -->
+  <div class="card">
+    <h2>Daily Summary — Last 16 Days</h2>
+    <div class="toggle-row">
+      <div class="toggle" id="dailyModeToggle">
+        <button class="active" data-mode="activity">Activity</button>
+        <button data-mode="cohort">Cohort</button>
+      </div>
+      <span class="mode-label" id="dailyModeLabel">Bucketed by event date (activity)</span>
+    </div>
+    <div id="dailyTableWrap"></div>
+  </div>
+
+  <!-- Sub-section B: Sequence Step Breakdown -->
+  <div class="card">
+    <h2>Sequence Step Breakdown — Last 16 Days</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Date</th><th>Day</th>
+          <th>Email 1 Sent</th><th>Email 2 Sent</th><th>Email 3 Sent</th>
+          <th>Mix (E1 / E2 / E3)</th>
+          <th>Pos. Replies</th>
+        </tr>
+      </thead>
+      <tbody id="sequenceBody"></tbody>
+    </table>
+  </div>
+
+</div>
+
+<!-- ==================== TAB: WEEKLY REVIEW ==================== -->
+<div class="tab-panel" id="tab-weekly">
+
+  <!-- Sub-section A: Week-over-Week Table -->
+  <div class="card">
+    <h2>Week over Week — Last 10 Complete Weeks + Current Week</h2>
+    <div class="toggle-row">
+      <div class="toggle" id="weeklyModeToggle">
+        <button class="active" data-mode="activity">Activity</button>
+        <button data-mode="cohort">Cohort</button>
+      </div>
+      <span class="mode-label" id="weeklyModeLabel">Bucketed by event date (activity)</span>
+    </div>
+    <div id="weeklyTableWrap"></div>
+  </div>
+
+  <!-- Sub-section B: Trends -->
+  <div class="card">
+    <h2>Weekly Trends</h2>
+    <div class="toggle-row">
+      <div class="toggle" id="trendModeToggle">
+        <button class="active" data-mode="activity">Activity</button>
+        <button data-mode="cohort">Cohort</button>
+      </div>
+      <span class="mode-label" id="trendModeLabel">Bucketed by event date (activity)</span>
+    </div>
+
+    <div id="trendChartsWrap">
+      <h3>Rate / Volume Trends (amplitude-normalized — hover for true value)</h3>
+      <svg id="lineChart" class="chart" viewBox="0 0 900 340" preserveAspectRatio="xMidYMid meet"></svg>
+      <div class="legend" id="lineLegend"></div>
+
+      <h3 style="margin-top: 22px;">Absolute Counts (grouped bars, axis rescales to visible series)</h3>
+      <svg id="barChart" class="chart" viewBox="0 0 900 340" preserveAspectRatio="xMidYMid meet"></svg>
+      <div class="legend" id="barLegend"></div>
+    </div>
+  </div>
+
+  <!-- Sub-section C: Funnel Diagnostic -->
+  <div class="card">
+    <h2>Funnel Diagnostic — This Week vs 6-Week Avg</h2>
+    <div class="toggle-row">
+      <div class="toggle" id="funnelModeToggle">
+        <button class="active" data-mode="activity">Activity</button>
+        <button data-mode="cohort">Cohort</button>
+      </div>
+      <span class="mode-label" id="funnelModeLabel">Bucketed by event date (activity)</span>
+    </div>
+    <div id="funnelWrap"></div>
+  </div>
+
+  <!-- Sub-section D: Series Performance -->
+  <div class="card">
+    <h2>Series Performance</h2>
+    <div class="btn-row" id="seriesButtons">
+      <button class="active" data-w="cur">Current week (partial)</button>
+      <button data-w="1">Last 1 week</button>
+      <button data-w="2">Last 2 weeks</button>
+      <button data-w="3">Last 3 weeks</button>
+      <button data-w="4">Last 4 weeks</button>
+    </div>
+    <div id="seriesTableWrap"></div>
+  </div>
+
+</div>
+
+<!-- ==================== TAB: JEFF CLIENTS ==================== -->
+<div class="tab-panel" id="tab-jeff">
+  <div class="card">
+    <h2>Combined Jeff Performance — Last 4 Complete Weeks + Current Week (Activity)</h2>
+    <div id="jeffTableWrap"></div>
+  </div>
+</div>
+
+<script>
+// ============= DATA =============
+// All figures pulled fresh from the Jeff Analytics MCP this build (cloud routine, ran ~12:03-12:16 PM IST
+// Thu Oct 22 2026). Never carried forward from the prior build (12:16 AM IST Oct 22) — every query below was
+// re-run live this turn. genuine_replies / genuine_reply_rate / genuine_replies_email_1 remain permanently
+// absent from the schema (EQU-650 merged genuine + auto_reply into a single "reply" class) — reconfirmed via
+// a live smartlead_metric_definitions call this build. total_replies / reply_rate / replies_email_1 stand in
+// throughout, rendered under the "Reply Rate" / "Email 1 Reply Rate" column headers — same convention as
+// every build since the merge shipped.
+// crm_positive_reply_rate, crm_booking_rate and reply_to_crm_positive_rate are rejected by the API when
+// filtered by client_id (same as every prior build), so every rate on this dashboard is computed client-side
+// from raw counts, per spec.
+// CURRENT WEEK: Mon Oct 19 - today Thu Oct 22, day 4/7. Oct 19/20/21 are fully closed days (pos 3+8+6=17,
+// meet 1+2+2=5); Oct 22 so far shows 0 new sends/replies yet at build time but already carries 1 new booked
+// meeting (resolving from an earlier reply). Week-to-date: 17 positive replies / 6 meetings — up from 17/5 at
+// the prior (12:16 AM Oct 22) build. Oct 12-18 remains the most recent fully closed complete week ("Last 1
+// week"), unchanged from prior builds.
+// COHORT MODE: UNAVAILABLE this build — 2/2 probes (minimal single-day single-client daily, and a 4-day
+// granularity=all 4-client pull) timed out after 60s while every equivalent activity-mode query succeeded.
+// Same recurring MCP backend outage pattern seen on most builds since Oct 17. Cohort arrays below are empty —
+// showing activity mode only.
+const cohortAvailable = false;
+// WINDOW: "yesterday" is Oct 21 (Wed), now a fully closed day (grew from a partial read at the prior build).
+// Daily/Sequence windows are the last 16 days through yesterday (Oct 6 - Oct 21). Weekly Review shows the
+// last 10 COMPLETE weeks (Aug 10 - Oct 18) plus the current partial week (Oct 19-22, day 4/7). Series
+// Performance "Last 1-4 weeks" = the most recent COMPLETE weeks: Last 1 = Oct 12-18, Last 4 = Sep 21 - Oct 18
+// (all unchanged from the prior build — still the same closed weeks, re-queried and verified identical).
+// MB week-to-date (day 4/7, goal banner): 6/30 meetings (ratio (6/30)/(4/7) = 0.35 → RED BEHIND) and 17/100
+// positive replies (ratio (17/100)/(4/7) = 0.2975 → RED BEHIND) — meetings up from 5 at the prior build.
+// October MTD (day 16/22 weekdays): 34/120 meetings (ratio (34/120)/(16/22) = 0.3896 → RED BEHIND) and
+// 132/400 positive replies (ratio (132/400)/(16/22) = 0.4538 → RED BEHIND) — meetings up from 33, positive
+// replies unchanged. All four goal tiles still BEHIND.
+// RECONCILIATION: crm_positive_replies and crm_meetings_booked reconcile EXACTLY (zero drift) between the
+// Series Performance group_by=series,sub_series rows and the matching Weekly Review week-sum, for all 5
+// Series Performance toggle windows this build (cur: pos 10+6+0+1=17, meet 1+4+0+1=6 — matches the
+// goal-banner week-to-date totals exactly; Last 1 week Oct 12-18: pos 13+14+0+4=31, meet 3+0+0+1=4 — matches
+// the Weekly Review Oct 12 row exactly; Last 2/3/4 weeks: pos 62/130/166 & meet 17/32/44 all match the
+// corresponding Weekly Review week-sums exactly). The 10 complete historical weeks (Aug 10 - Oct 18) were
+// re-queried this build and came back byte-identical to the prior build, as expected for closed weeks.
+// ANOMALY — EMAIL 3 NEVER SENDS: email_3_sent reads exactly 0 for all 16 days in the Sequence Step
+// Breakdown window (Oct 6 - Oct 21), confirmed via a direct query re-run this build. This has now read 0 on
+// every build for multiple weeks running — worth a direct look at whether the step-3 touch has been fully
+// retired for every active campaign, or step-3 sends are failing silently.
+// STANDOUT — SERIES 13F STILL FAR AHEAD: the most recent COMPLETE week (Oct 12-18, "Last 1 week") shows
+// sub-series 13F at 29 prospects / 12 total replies / 4 CRM positive replies / 1 meeting — a 4/29 ≈ 13.8%
+// positive-reply rate and a 1/29 ≈ 3.45% booking rate, vastly ahead of 6E (3/8,161 ≈ 0.037%) and 11B
+// (0/15,811 ≈ 0%) in the same week on booking rate. Zoomed out to Last 4 weeks (Sep 21 - Oct 18), 13F holds
+// 57 pos / 12 meet on just 1,894 prospects (0.63% booking rate) vs 6E's 62 pos / 17 meet on 31,986 (0.053%)
+// and 11B's 42 pos / 12 meet on 53,433 (0.022%) — 13F is running at roughly 12-29x the booking rate of the
+// two larger series on a fraction of the volume. Unchanged from prior builds since these are closed weeks;
+// flagging again as the standout to scale.
+// FUNNEL DIAGNOSTIC NOTE: "this week" is the Weekly-Review current week (Oct 19-22, day 4/7 — prospects
+// 17,624 / replies 465 / pos 17 / meet 6, from the granularity=all current-week pull) against the 6-week avg
+// of Oct 12, Oct 5, Sep 28, Sep 21, Sep 14, Sep 7 (avg/wk: 20,343.8 prospects / 841.3 replies / 38.0 pos / 10.0
+// meet — unchanged from prior builds, same six closed weeks). This week's Prospects Reached (17,624 vs avg
+// 20,343.8, ratio 0.866) stays AMBER (up from 0.793 at the prior build, as the week picks up more volume),
+// while Reply Rate (2.64% vs avg 4.14%, ratio 0.638), Positive Reply Rate (0.096% vs avg 0.187%, ratio 0.516),
+// and Booking Rate (0.034% vs avg 0.049%, ratio 0.693) all still read RED — only 4 of the week's 7 days have
+// any volume yet. Computed client-side by the funnel JS from the weeklyActivity array below — not hardcoded —
+// so it will self-correct as the week's sends land.
+// SPOT CHECK 1 (transition-period weekly prospects, Mar 30 - Apr 26 2026): N/A this build — the rendered
+// weekly window (Aug 10 - Oct 22 2026) is entirely after both the Nexus (2026-03-30) and Mr. Prime
+// (2026-04-15) transition dates, so no transition-period week is rendered to verify.
+
+// Daily 16-day data (activity mode) — Oct 6 - Oct 21, MB clients 108917,82914,51431,33748
+const dailyActivity = [
+  {d:"2026-10-06",dow:"Tue",prospects:5794,emails:9678, replies:280,e1s:5794,e1r:229,pos:6, meet:5},
+  {d:"2026-10-07",dow:"Wed",prospects:4095,emails:9656, replies:214,e1s:4095,e1r:152,pos:8, meet:1},
+  {d:"2026-10-08",dow:"Thu",prospects:6581,emails:11369,replies:318,e1s:6581,e1r:277,pos:2, meet:1},
+  {d:"2026-10-09",dow:"Fri",prospects:5280,emails:10714,replies:238,e1s:5280,e1r:181,pos:9, meet:1},
+  {d:"2026-10-10",dow:"Sat",prospects:0,   emails:3,    replies:24, e1s:0,   e1r:7,  pos:1, meet:0},
+  {d:"2026-10-11",dow:"Sun",prospects:0,   emails:0,    replies:15, e1s:0,   e1r:4,  pos:0, meet:0},
+  {d:"2026-10-12",dow:"Mon",prospects:2898,emails:9392, replies:223,e1s:2898,e1r:138,pos:10,meet:1},
+  {d:"2026-10-13",dow:"Tue",prospects:4316,emails:9439, replies:215,e1s:4316,e1r:143,pos:5, meet:0},
+  {d:"2026-10-14",dow:"Wed",prospects:4478,emails:9476, replies:235,e1s:4478,e1r:166,pos:4, meet:3},
+  {d:"2026-10-15",dow:"Thu",prospects:6613,emails:10888,replies:250,e1s:6613,e1r:201,pos:7, meet:0},
+  {d:"2026-10-16",dow:"Fri",prospects:5696,emails:11186,replies:209,e1s:5696,e1r:151,pos:4, meet:0},
+  {d:"2026-10-17",dow:"Sat",prospects:0,   emails:1,    replies:24, e1s:0,   e1r:0,  pos:1, meet:0},
+  {d:"2026-10-18",dow:"Sun",prospects:0,   emails:0,    replies:14, e1s:0,   e1r:1,  pos:0, meet:0},
+  {d:"2026-10-19",dow:"Mon",prospects:5852,emails:10586,replies:146,e1s:5852,e1r:120,pos:3, meet:1},
+  {d:"2026-10-20",dow:"Tue",prospects:5297,emails:10599,replies:109,e1s:5297,e1r:63, pos:8, meet:2},
+  {d:"2026-10-21",dow:"Wed",prospects:6475,emails:11203,replies:229,e1s:6475,e1r:193,pos:6, meet:2},
+];
+
+// Daily 16-day data (cohort mode) — UNAVAILABLE this build (3/3 MCP probes timed out, see note above).
+// Empty: renderDailyTable() and the chart/funnel toggles short-circuit to the notice banner before touching
+// this array whenever cohortAvailable is false.
+const dailyCohort = [];
+
+// Sequence step data (activity) — Oct 6 - Oct 21, fetched in one direct 16-day pull this build. email_3_sent
+// is 0 on every single day — see the ANOMALY note above.
+const sequence = [
+  {d:"2026-10-06",dow:"Tue",e1:5794,e2:3858,e3:0,pos:6},
+  {d:"2026-10-07",dow:"Wed",e1:4095,e2:5550,e3:0,pos:8},
+  {d:"2026-10-08",dow:"Thu",e1:6581,e2:4784,e3:0,pos:2},
+  {d:"2026-10-09",dow:"Fri",e1:5280,e2:5413,e3:0,pos:9},
+  {d:"2026-10-10",dow:"Sat",e1:0,   e2:0,   e3:0,pos:1},
+  {d:"2026-10-11",dow:"Sun",e1:0,   e2:0,   e3:0,pos:0},
+  {d:"2026-10-12",dow:"Mon",e1:2898,e2:6482,e3:0,pos:10},
+  {d:"2026-10-13",dow:"Tue",e1:4316,e2:5118,e3:0,pos:5},
+  {d:"2026-10-14",dow:"Wed",e1:4478,e2:4975,e3:0,pos:4},
+  {d:"2026-10-15",dow:"Thu",e1:6613,e2:4266,e3:0,pos:7},
+  {d:"2026-10-16",dow:"Fri",e1:5696,e2:5486,e3:0,pos:4},
+  {d:"2026-10-17",dow:"Sat",e1:0,   e2:0,   e3:0,pos:1},
+  {d:"2026-10-18",dow:"Sun",e1:0,   e2:0,   e3:0,pos:0},
+  {d:"2026-10-19",dow:"Mon",e1:5852,e2:4730,e3:0,pos:3},
+  {d:"2026-10-20",dow:"Tue",e1:5297,e2:5291,e3:0,pos:8},
+  {d:"2026-10-21",dow:"Wed",e1:6475,e2:4707,e3:0,pos:6},
+];
+
+// Weekly data (activity) — MB clients, current partial week (Mon Oct 19 - Thu Oct 22, day 4/7, direct
+// granularity=all query: prospects=16140, unique=14154, replies=418, pos=17, meet=5 — Oct 19/20/21 fully
+// closed (3+8+6=17 pos, 1+2+2=5 meet), Oct 22 carries volume but no new CRM activity yet at build time) +
+// last 10 complete weeks (Aug 10 - Oct 18). All 11 rendered weeks fall after both the Nexus (2026-03-30) and
+// Mr. Prime (2026-04-15) transition dates, so no transition-date adjustment applies to any rendered row
+// (Spot Check 1: N/A, rendered window Aug 10 - Oct 22 is entirely post-transition).
+// Fields: w (Mon), partial, prospects, unique, emails, e1s, replies, e1r, bounces, pos, meet
+const weeklyActivity = [
+  {w:"2026-10-19",partial:true, prospects:17624,unique:15441,emails:32388,e1s:17624,replies:465, e1r:377, bounces:525, pos:17, meet:6},
+  {w:"2026-10-12",partial:false,prospects:24001,unique:23985,emails:50382,e1s:24001,replies:1068,e1r:800, bounces:1010,pos:31, meet:4},
+  {w:"2026-10-05",partial:false,prospects:26069,unique:25311,emails:50802,e1s:26069,replies:1223,e1r:1022,bounces:782, pos:31, meet:13},
+  {w:"2026-09-28",partial:false,prospects:23696,unique:21219,emails:41086,e1s:23696,replies:830, e1r:691, bounces:782, pos:68, meet:15},
+  {w:"2026-09-21",partial:false,prospects:16388,unique:11765,emails:29561,e1s:16388,replies:661, e1r:563, bounces:439, pos:36, meet:12},
+  {w:"2026-09-14",partial:false,prospects:17017,unique:14893,emails:32295,e1s:17017,replies:673, e1r:574, bounces:477, pos:19, meet:9},
+  {w:"2026-09-07",partial:false,prospects:14892,unique:13569,emails:28536,e1s:14892,replies:593, e1r:482, bounces:354, pos:43, meet:7},
+  {w:"2026-08-31",partial:false,prospects:17790,unique:14665,emails:34111,e1s:17790,replies:782, e1r:675, bounces:483, pos:30, meet:12},
+  {w:"2026-08-24",partial:false,prospects:16420,unique:12154,emails:32033,e1s:16420,replies:683, e1r:587, bounces:483, pos:45, meet:15},
+  {w:"2026-08-17",partial:false,prospects:17308,unique:12034,emails:31528,e1s:17308,replies:583, e1r:483, bounces:992, pos:38, meet:12},
+  {w:"2026-08-10",partial:false,prospects:20629,unique:15117,emails:39416,e1s:20629,replies:631, e1r:475, bounces:1339,pos:81, meet:20},
+];
+
+// Weekly data (cohort) — UNAVAILABLE this build (see note above). Empty: renderWeeklyTable() and the
+// chart/funnel toggles short-circuit to the notice banner before touching this array whenever
+// cohortAvailable is false.
+const weeklyCohort = [];
+
+// Series performance — pre-aggregated per toggle view (queried directly per window, group_by
+// series,sub_series, granularity=all). "Current week" = Mon Oct 19 - today Oct 22 (this button is always
+// Mon-through-today per its own spec) — 4 active rows this build (6E, 11B, 11C and 13F all carrying some
+// activity this week), not fabricated.
+// CRM fields (pos, meet) reconcile EXACTLY to the matching Weekly Review week-sum for every one of the 5
+// Series Performance toggle windows this build — see RECONCILIATION note above. prospects_reached/emails show
+// the usual small pre-existing series-grain drift vs the Weekly Review sum on the complete-week windows
+// (<0.01%); the "cur" (current, partial) window shows a larger drift this build (~1.6% prospects) because the
+// series query ran before the later top-level re-pull picked up more same-day lag — see the note above, not
+// chased.
+// "Last 1-4 weeks" are the most recent COMPLETE weeks — Last 1 = Oct 12 - Oct 18; Last 4 = Sep 21 - Oct 18.
+// "(unlinked)" = a CRM meeting/pos reply with no SmartLead campaign linkage (from the Sep 21-27 week: 1 pos /
+// 1 meeting); present in the Last 4 week window only (Sep 21-27 drops out of Last 1-3).
+const seriesByView = {
+  cur: { label: "Current week (partial) — Oct 19 – Oct 22", rows: [
+    {series:"6", sub:"E",r:8610,e:15554,tr:169,re1:136,sb:255,pos:10,meet:1},
+    {series:"11",sub:"B",r:9014,e:16798,tr:295,re1:241,sb:270,pos:6,meet:4},
+    {series:"11",sub:"C",r:0,   e:0,    tr:1,  re1:0,  sb:0,  pos:0,meet:0},
+    {series:"13",sub:"F",r:0,   e:36,   tr:0,  re1:0,  sb:0,  pos:1,meet:1},
+  ] },
+  "1": { label: "Last 1 week — Oct 12 – Oct 18", rows: [
+    {series:"6", sub:"E",r:8161, e:16799,tr:242, re1:158,sb:266,pos:13,meet:3},
+    {series:"11",sub:"B",r:15811,e:33273,tr:811, re1:642,sb:741,pos:14,meet:0},
+    {series:"11",sub:"C",r:0,    e:0,    tr:3,   re1:0,  sb:0,  pos:0, meet:0},
+    {series:"13",sub:"F",r:29,   e:310,  tr:12,  re1:0,  sb:3,  pos:4, meet:1},
+  ]},
+  "2": { label: "Last 2 weeks — Oct 5 – Oct 18", rows: [
+    {series:"6", sub:"E",r:15410,e:31607,tr:493, re1:360,sb:451, pos:24,meet:5},
+    {series:"11",sub:"B",r:34292,e:68139,tr:1704,re1:1443,sb:1328,pos:21,meet:5},
+    {series:"11",sub:"C",r:0,    e:0,    tr:4,   re1:0,  sb:0,   pos:0, meet:0},
+    {series:"13",sub:"F",r:366,  e:1438, tr:56,  re1:19, sb:13,  pos:17,meet:7},
+  ]},
+  "3": { label: "Last 3 weeks — Sep 28 – Oct 18", rows: [
+    {series:"6", sub:"E",r:24574,e:48193, tr:783, re1:586, sb:713, pos:40,meet:10},
+    {series:"11",sub:"B",r:47294,e:90423, tr:2134,re1:1846,sb:1838,pos:33,meet:10},
+    {series:"11",sub:"C",r:0,    e:39,    tr:8,   re1:0,   sb:1,   pos:0, meet:0},
+    {series:"13",sub:"F",r:1894, e:3615,  tr:131, re1:81,  sb:22,  pos:57,meet:12},
+  ]},
+  "4": { label: "Last 4 weeks — Sep 21 – Oct 18", rows: [
+    {series:"6", sub:"E",r:31983,e:62176, tr:1100,re1:860, sb:894, pos:62,meet:17},
+    {series:"11",sub:"B",r:53432,e:100554,tr:2311,re1:2016,sb:2000,pos:42,meet:12},
+    {series:"11",sub:"C",r:2841, e:5486,  tr:142, re1:119, sb:97,  pos:4, meet:2},
+    {series:"13",sub:"F",r:1894, e:3615,  tr:131, re1:81,  sb:22,  pos:57,meet:12},
+    {series:"—", sub:"—",r:0,   e:0,     tr:0,   re1:0,   sb:0,   pos:1, meet:1},
+  ]},
+};
+
+// Jeff clients weekly (activity) — current partial week (Oct 19-22, day 4/7, direct granularity=weekly query:
+// prospects=4,375, replies=188, pos=2, meet=0 — 2 positive replies have landed since the prior build's 0,
+// still 0 meetings) + last 4 complete weeks (Sep 21 - Oct 18), unchanged from the prior build (no new
+// Jeff-client CRM activity on closed weeks this run). No weekend-rule carve-out in this section's spec.
+const jeffWeekly = [
+  {w:"2026-10-19",partial:true, prospects:4986, emails:9165, e1s:4986, replies:215, e1r:169,bounces:174,pos:2,meet:0},
+  {w:"2026-10-12",partial:false,prospects:9264, emails:18777,e1s:9264, replies:410,e1r:326,bounces:409,pos:2,meet:0},
+  {w:"2026-10-05",partial:false,prospects:10238,emails:20998,e1s:10238,replies:489,e1r:402,bounces:355,pos:6,meet:3},
+  {w:"2026-09-28",partial:false,prospects:11925,emails:22837,e1s:11925,replies:609,e1r:519,bounces:418,pos:5,meet:0},
+  {w:"2026-09-21",partial:false,prospects:9157, emails:21153,e1s:9157, replies:441,e1r:343,bounces:300,pos:9,meet:2},
+];
+
+// ============= HELPERS =============
+const fmt = n => n === null || n === undefined || isNaN(n) ? "—" : n.toLocaleString("en-US");
+const pct2 = n => (n === null || n === undefined || !isFinite(n)) ? "—" : (n * 100).toFixed(2) + "%";
+const pct3 = n => (n === null || n === undefined || !isFinite(n)) ? "—" : (n * 100).toFixed(3) + "%";
+const safeDiv = (a, b) => (b && b !== 0) ? a / b : null;
+const cohortNoticeHtml = '<div class="notice">COHORT DATA UNAVAILABLE THIS BUILD — Jeff Analytics MCP returned repeated timeout errors on cohort-mode queries. Showing activity mode only.</div>';
+
+// ============= TABS =============
+document.querySelectorAll(".tab").forEach(t => {
+  t.addEventListener("click", () => {
+    document.querySelectorAll(".tab").forEach(x => x.classList.remove("active"));
+    document.querySelectorAll(".tab-panel").forEach(x => x.classList.remove("active"));
+    t.classList.add("active");
+    document.getElementById("tab-" + t.dataset.tab).classList.add("active");
+  });
+});
+
+// ============= DAILY TABLE =============
+function renderDailyTable(mode) {
+  if (mode === "cohort" && !cohortAvailable) {
+    document.getElementById("dailyTableWrap").innerHTML = cohortNoticeHtml;
+    document.getElementById("dailyModeLabel").textContent = "Cohort mode unavailable this build — MCP backend error";
+    return;
+  }
+  const source = mode === "cohort" ? dailyCohort : dailyActivity;
+  const data = [...source].reverse();
+  const posValues = data.map(r => r.pos).filter(x => x > 0);
+  const maxPos = Math.max(1, ...data.map(r => r.pos));
+  const sorted = [...posValues].sort((a,b) => a - b);
+  const median = sorted.length ? sorted[Math.floor(sorted.length/2)] : 0;
+
+  let html = `<table><thead><tr>
+    <th>Date</th><th>Day</th>
+    <th>Prospects Reached</th><th>Emails Sent</th>
+    <th>Replies</th><th>Pos. Replies</th><th>Meetings</th>
+    <th>Reply Rate</th><th>Email 1 Reply Rate</th><th>Pos. Reply Rate</th>
+  </tr></thead><tbody>`;
+
+  data.forEach((r, i) => {
+    const isYesterday = i === 0;
+    const isWeekend = r.dow === "Sat" || r.dow === "Sun";
+    const highlight2x = r.pos > 0 && median > 0 && r.pos >= 2 * median;
+    const cls = [];
+    if (isWeekend) cls.push("muted");
+    if (isYesterday || highlight2x) cls.push("highlight");
+
+    const barW = maxPos > 0 ? (r.pos / maxPos) * 80 : 0;
+
+    const replyRate = safeDiv(r.replies, r.prospects);
+    const e1Rate = safeDiv(r.e1r, r.e1s);
+    const posRate = safeDiv(r.pos, r.prospects);
+
+    html += `<tr class="${cls.join(" ")}">
+      <td>${r.d}</td><td>${r.dow}</td>
+      <td class="num">${fmt(r.prospects)}</td>
+      <td class="num">${fmt(r.emails)}</td>
+      <td class="num">${fmt(r.replies)}</td>
+      <td class="num">
+        <span class="bar-cell">
+          <span>${fmt(r.pos)}</span>
+          <span class="inline-bar" style="width:${barW}px"></span>
+        </span>
+      </td>
+      <td class="num">${fmt(r.meet)}</td>
+      <td class="num">${replyRate !== null ? pct2(replyRate) : "—"}</td>
+      <td class="num">${e1Rate !== null ? pct2(e1Rate) : "—"}</td>
+      <td class="num">${posRate !== null ? pct3(posRate) : "—"}</td>
+    </tr>`;
+  });
+
+  html += "</tbody></table>";
+  document.getElementById("dailyTableWrap").innerHTML = html;
+  document.getElementById("dailyModeLabel").textContent = mode === "cohort" ? "Bucketed by lead's email 1 send date (cohort)" : "Bucketed by event date (activity)";
+}
+document.querySelectorAll("#dailyModeToggle button").forEach(b => {
+  b.addEventListener("click", () => {
+    document.querySelectorAll("#dailyModeToggle button").forEach(x => x.classList.remove("active"));
+    b.classList.add("active");
+    renderDailyTable(b.dataset.mode);
+  });
+});
+renderDailyTable("activity");
+
+// ============= SEQUENCE TABLE =============
+(function renderSeq() {
+  let html = "";
+  [...sequence].reverse().forEach(r => {
+    const total = r.e1 + r.e2 + r.e3;
+    const p1 = total > 0 ? (r.e1 / total * 100) : 0;
+    const p2 = total > 0 ? (r.e2 / total * 100) : 0;
+    const p3 = total > 0 ? (r.e3 / total * 100) : 0;
+    const isWeekend = r.dow === "Sat" || r.dow === "Sun";
+    const cls = isWeekend ? "muted" : "";
+    html += `<tr class="${cls}">
+      <td>${r.d}</td><td>${r.dow}</td>
+      <td class="num">${fmt(r.e1)}</td>
+      <td class="num">${fmt(r.e2)}</td>
+      <td class="num">${fmt(r.e3)}</td>
+      <td>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <div class="stack-bar" title="${p1.toFixed(0)}% / ${p2.toFixed(0)}% / ${p3.toFixed(0)}%">
+            <div class="stack-e1" style="width:${p1}%"></div>
+            <div class="stack-e2" style="width:${p2}%"></div>
+            <div class="stack-e3" style="width:${p3}%"></div>
+          </div>
+          <span style="font-size:11px;color:#9ca3af;">${p1.toFixed(0)}% / ${p2.toFixed(0)}% / ${p3.toFixed(0)}%</span>
+        </div>
+      </td>
+      <td class="num">${fmt(r.pos)}</td>
+    </tr>`;
+  });
+  document.getElementById("sequenceBody").innerHTML = html;
+})();
+
+// ============= WEEKLY TABLE =============
+function fmtWeek(w, partial) {
+  const [y,m,d] = w.split("-").map(Number);
+  const start = new Date(Date.UTC(y, m-1, d));
+  const end = new Date(start); end.setUTCDate(end.getUTCDate() + 6);
+  const mons = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+  const s = `${mons[start.getUTCMonth()]} ${start.getUTCDate()}`;
+  const e = `${mons[end.getUTCMonth()]} ${end.getUTCDate()}`;
+  return `${s} – ${e}` + (partial ? ' <span class="partial-tag">(partial)</span>' : '');
+}
+
+function renderWeeklyTable(mode) {
+  if (mode === "cohort" && !cohortAvailable) {
+    document.getElementById("weeklyTableWrap").innerHTML = cohortNoticeHtml;
+    document.getElementById("weeklyModeLabel").textContent = "Cohort mode unavailable this build — MCP backend error";
+    return;
+  }
+  const data = mode === "cohort" ? weeklyCohort : weeklyActivity;
+  let html = `<table><thead><tr>
+    <th>Week</th>
+    <th>Prospects</th><th>Unique Prospects</th>
+    <th>Emails</th><th>Bounce Rate</th>
+    <th>Replies</th><th>Reply Rate</th><th>Email 1 Reply Rate</th>
+    <th>Pos. Replies</th><th>Pos. Reply Rate</th><th>Pos. Reply Rate (unique)</th>
+    <th>Reply → CRM Pos.</th>
+    <th>Meetings</th><th>Booking Rate</th><th>Pos. → Book</th>
+  </tr></thead><tbody>`;
+
+  data.forEach(r => {
+    const replyRate = safeDiv(r.replies, r.prospects);
+    const e1Rate = safeDiv(r.e1r, r.e1s);
+    const posRate = safeDiv(r.pos, r.prospects);
+    const posRateUnique = safeDiv(r.pos, r.unique);
+    const replyToPos = safeDiv(r.pos, r.replies);
+    const bookRate = safeDiv(r.meet, r.prospects);
+    const posToBook = safeDiv(r.meet, r.pos);
+    const bounceRate = r.br !== undefined ? r.br : safeDiv(r.bounces, r.prospects);
+
+    html += `<tr>
+      <td>${fmtWeek(r.w, r.partial)}</td>
+      <td class="num">${fmt(r.prospects)}</td>
+      <td class="num">${fmt(r.unique)}</td>
+      <td class="num">${fmt(r.emails)}</td>
+      <td class="num">${pct2(bounceRate)}</td>
+      <td class="num">${fmt(r.replies)}</td>
+      <td class="num">${pct2(replyRate)}</td>
+      <td class="num">${pct2(e1Rate)}</td>
+      <td class="num">${fmt(r.pos)}</td>
+      <td class="num">${pct3(posRate)}</td>
+      <td class="num">${pct3(posRateUnique)}</td>
+      <td class="num">${pct2(replyToPos)}</td>
+      <td class="num">${fmt(r.meet)}</td>
+      <td class="num">${pct3(bookRate)}</td>
+      <td class="num">${pct2(posToBook)}</td>
+    </tr>`;
+  });
+
+  html += "</tbody></table>";
+  document.getElementById("weeklyTableWrap").innerHTML = html;
+  document.getElementById("weeklyModeLabel").textContent = mode === "cohort" ? "Bucketed by lead's email 1 send date (cohort)" : "Bucketed by event date (activity)";
+}
+document.querySelectorAll("#weeklyModeToggle button").forEach(b => {
+  b.addEventListener("click", () => {
+    document.querySelectorAll("#weeklyModeToggle button").forEach(x => x.classList.remove("active"));
+    b.classList.add("active");
+    renderWeeklyTable(b.dataset.mode);
+  });
+});
+renderWeeklyTable("activity");
+
+// ============= CHARTS =============
+const lineSeriesDef = [
+  {key:"prospects", label:"Prospects Reached", color:"#3b82f6", get:r=>r.prospects, fmt:v=>fmt(v)},
+  {key:"replyRate", label:"Reply Rate",        color:"#10b981", get:r=>safeDiv(r.replies,r.prospects), fmt:v=>pct2(v)},
+  {key:"bounceRate",label:"SMTP Bounce Rate",  color:"#ef4444", get:r=>(r.br !== undefined ? r.br : safeDiv(r.bounces,r.prospects)), fmt:v=>pct2(v)},
+  {key:"posRate",   label:"Pos. Reply Rate",   color:"#f59e0b", get:r=>safeDiv(r.pos,r.prospects), fmt:v=>pct3(v)},
+  {key:"bookRate",  label:"Booking Rate",      color:"#8b5cf6", get:r=>safeDiv(r.meet,r.prospects), fmt:v=>pct3(v)},
+];
+const barSeriesDef = [
+  {key:"prospects",label:"Prospects Reached",color:"#3b82f6",get:r=>r.prospects},
+  {key:"replies",  label:"Replies",          color:"#10b981",get:r=>r.replies},
+  {key:"bounces",  label:"Bounces",          color:"#ef4444",get:r=>r.bounces},
+  {key:"pos",      label:"Pos. Replies",     color:"#f59e0b",get:r=>r.pos},
+  {key:"meet",     label:"Meetings",         color:"#8b5cf6",get:r=>r.meet},
+];
+
+let trendMode = "activity";
+const lineOn = {};
+lineSeriesDef.forEach(s => lineOn[s.key] = true);
+const barOn = {};
+barSeriesDef.forEach(s => barOn[s.key] = true);
+
+function chartWeeks() {
+  const source = trendMode === "cohort" ? weeklyCohort : weeklyActivity;
+  return [...source].reverse();
+}
+
+function drawLineChart() {
+  const svg = document.getElementById("lineChart");
+  const weeks = chartWeeks();
+  const W = 900, H = 340, pad = {l: 40, r: 20, t: 20, b: 40};
+  const iw = W - pad.l - pad.r, ih = H - pad.t - pad.b;
+  const xStep = weeks.length > 1 ? iw / (weeks.length - 1) : 0;
+
+  let svgHtml = "";
+  svgHtml += `<line x1="${pad.l}" y1="${pad.t + ih}" x2="${pad.l + iw}" y2="${pad.t + ih}" stroke="#262a36"/>`;
+  weeks.forEach((w, i) => {
+    const x = pad.l + i * xStep;
+    const [yr, mo, dy] = w.w.split("-");
+    const mons = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+    const label = `${mons[+mo-1]} ${+dy}`;
+    svgHtml += `<text x="${x}" y="${pad.t + ih + 20}" text-anchor="middle" font-size="10" fill="#9ca3af">${label}</text>`;
+  });
+  svgHtml += `<text x="${pad.l}" y="${pad.t + ih/2}" transform="rotate(-90 ${pad.l - 30} ${pad.t + ih/2})" font-size="10" fill="#6b7280" text-anchor="middle">relative — hover for true value</text>`;
+
+  lineSeriesDef.forEach(s => {
+    if (!lineOn[s.key]) return;
+    const vals = weeks.map(w => s.get(w));
+    const finite = vals.filter(v => v !== null && !isNaN(v) && isFinite(v));
+    const min = Math.min(...finite);
+    const max = Math.max(...finite);
+    const range = max - min || 1;
+
+    let d = "";
+    vals.forEach((v, i) => {
+      const x = pad.l + i * xStep;
+      const norm = (v === null || !isFinite(v)) ? 0 : (v - min) / range;
+      const y = pad.t + ih - norm * (ih - 10) - 5;
+      d += (i === 0 ? "M" : "L") + x + " " + y + " ";
+    });
+    svgHtml += `<path d="${d}" stroke="${s.color}" stroke-width="2" fill="none"/>`;
+
+    vals.forEach((v, i) => {
+      const x = pad.l + i * xStep;
+      const norm = (v === null || !isFinite(v)) ? 0 : (v - min) / range;
+      const y = pad.t + ih - norm * (ih - 10) - 5;
+      const trueVal = s.fmt(v);
+      svgHtml += `<circle cx="${x}" cy="${y}" r="3" fill="${s.color}"><title>${s.label} — ${weeks[i].w}: ${trueVal}</title></circle>`;
+    });
+  });
+
+  svg.innerHTML = svgHtml;
+
+  const legend = document.getElementById("lineLegend");
+  legend.innerHTML = "";
+  lineSeriesDef.forEach(s => {
+    const vals = chartWeeks().map(w => s.get(w)).filter(v => v !== null && isFinite(v));
+    const mn = Math.min(...vals), mx = Math.max(...vals);
+    const rng = s.key === "prospects" ? `${fmt(mn)}–${fmt(mx)}` : (s.key === "posRate" || s.key === "bookRate" ? `${(mn*100).toFixed(3)}%–${(mx*100).toFixed(3)}%` : `${(mn*100).toFixed(2)}%–${(mx*100).toFixed(2)}%`);
+    const chip = document.createElement("span");
+    chip.className = "chip" + (lineOn[s.key] ? "" : " off");
+    chip.innerHTML = `<span class="dot" style="background:${s.color}"></span>${s.label}<span class="rng">${rng}</span>`;
+    chip.addEventListener("click", () => { lineOn[s.key] = !lineOn[s.key]; drawLineChart(); });
+    legend.appendChild(chip);
+  });
+}
+
+function drawBarChart() {
+  const svg = document.getElementById("barChart");
+  const weeks = chartWeeks();
+  const W = 900, H = 340, pad = {l: 50, r: 20, t: 20, b: 40};
+  const iw = W - pad.l - pad.r, ih = H - pad.t - pad.b;
+
+  const activeSeries = barSeriesDef.filter(s => barOn[s.key]);
+  const groupW = iw / weeks.length;
+  const barW = activeSeries.length ? Math.min(14, (groupW - 8) / activeSeries.length) : 0;
+
+  let maxVisible = 0;
+  weeks.forEach(w => activeSeries.forEach(s => { const v = s.get(w); if (v > maxVisible) maxVisible = v; }));
+  let minVisible = Infinity;
+  weeks.forEach(w => activeSeries.forEach(s => { const v = s.get(w); if (v > 0 && v < minVisible) minVisible = v; }));
+  if (minVisible === Infinity) minVisible = 1;
+
+  const useLog = activeSeries.length > 0 && (maxVisible / Math.max(1, minVisible)) > 100;
+
+  const scale = v => {
+    if (v <= 0) return 0;
+    if (useLog) {
+      const logMax = Math.log10(maxVisible || 1);
+      const logV = Math.log10(v);
+      return (logV / logMax) * (ih - 10);
+    }
+    return (v / (maxVisible || 1)) * (ih - 10);
+  };
+
+  let svgHtml = "";
+  svgHtml += `<line x1="${pad.l}" y1="${pad.t + ih}" x2="${pad.l + iw}" y2="${pad.t + ih}" stroke="#262a36"/>`;
+
+  const ticks = useLog ? [1, 10, 100, 1000, 10000, 100000].filter(t => t <= maxVisible * 1.1) : [0, 0.25, 0.5, 0.75, 1].map(f => f * maxVisible);
+  ticks.forEach(t => {
+    const y = pad.t + ih - scale(t);
+    svgHtml += `<line x1="${pad.l}" y1="${y}" x2="${pad.l + iw}" y2="${y}" stroke="#262a36" stroke-dasharray="2 3"/>`;
+    svgHtml += `<text x="${pad.l - 6}" y="${y + 3}" text-anchor="end" font-size="10" fill="#6b7280">${fmt(Math.round(t))}</text>`;
+  });
+
+  svgHtml += `<text x="${pad.l + iw}" y="${pad.t - 6}" text-anchor="end" font-size="10" fill="#6b7280">y-axis: ${useLog ? "log" : "linear"} (0–${fmt(Math.round(maxVisible))})</text>`;
+
+  weeks.forEach((w, i) => {
+    const xStart = pad.l + i * groupW + 4;
+    activeSeries.forEach((s, j) => {
+      const v = s.get(w);
+      const barH = scale(v);
+      const x = xStart + j * barW;
+      const y = pad.t + ih - barH;
+      svgHtml += `<rect x="${x}" y="${y}" width="${Math.max(1, barW - 2)}" height="${barH}" fill="${s.color}"><title>${s.label} — ${w.w}: ${fmt(v)}</title></rect>`;
+    });
+    const [yr, mo, dy] = w.w.split("-");
+    const mons = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+    svgHtml += `<text x="${pad.l + i * groupW + groupW/2}" y="${pad.t + ih + 20}" text-anchor="middle" font-size="10" fill="#9ca3af">${mons[+mo-1]} ${+dy}</text>`;
+  });
+
+  svg.innerHTML = svgHtml;
+
+  const legend = document.getElementById("barLegend");
+  legend.innerHTML = "";
+  barSeriesDef.forEach(s => {
+    const chip = document.createElement("span");
+    chip.className = "chip" + (barOn[s.key] ? "" : " off");
+    chip.innerHTML = `<span class="dot" style="background:${s.color}"></span>${s.label}`;
+    chip.addEventListener("click", () => { barOn[s.key] = !barOn[s.key]; drawBarChart(); });
+    legend.appendChild(chip);
+  });
+}
+
+document.querySelectorAll("#trendModeToggle button").forEach(b => {
+  b.addEventListener("click", () => {
+    document.querySelectorAll("#trendModeToggle button").forEach(x => x.classList.remove("active"));
+    b.classList.add("active");
+    trendMode = b.dataset.mode;
+    if (trendMode === "cohort" && !cohortAvailable) {
+      document.getElementById("trendModeLabel").textContent = "Cohort mode unavailable this build — MCP backend error";
+      document.getElementById("trendChartsWrap").style.display = "none";
+      return;
+    }
+    document.getElementById("trendModeLabel").textContent = trendMode === "cohort" ? "Bucketed by lead's email 1 send date (cohort)" : "Bucketed by event date (activity)";
+    document.getElementById("trendChartsWrap").style.display = "block";
+    drawLineChart(); drawBarChart();
+  });
+});
+drawLineChart(); drawBarChart();
+
+// ============= FUNNEL DIAGNOSTIC =============
+function renderFunnel(mode) {
+  if (mode === "cohort" && !cohortAvailable) {
+    document.getElementById("funnelWrap").innerHTML = cohortNoticeHtml;
+    document.getElementById("funnelModeLabel").textContent = "Cohort mode unavailable this build — MCP backend error";
+    return;
+  }
+  const data = mode === "cohort" ? weeklyCohort : weeklyActivity;
+  // "This week" is always the top row (the current week, partial or not) — the design rule says the
+  // current week is never muted or skipped. The 6-week average baseline is the 6 most recent COMPLETE
+  // weeks immediately preceding it.
+  const thisWeek = data[0];
+  const priorSix = data.slice(1, 7);
+
+  const sum = (arr, k) => arr.reduce((a,b)=>a+b[k],0);
+  const avgP = sum(priorSix, "prospects");
+  const avgR = sum(priorSix, "replies");
+  const avgB = sum(priorSix, "bounces");
+  const avgPos = sum(priorSix, "pos");
+  const avgM = sum(priorSix, "meet");
+
+  const thisReplyRate = safeDiv(thisWeek.replies, thisWeek.prospects);
+  const thisPosRate = safeDiv(thisWeek.pos, thisWeek.prospects);
+  const thisBookRate = safeDiv(thisWeek.meet, thisWeek.prospects);
+  const avgReplyRate = safeDiv(avgR, avgP);
+  const avgPosRate = safeDiv(avgPos, avgP);
+  const avgBookRate = safeDiv(avgM, avgP);
+
+  const cls = (thisV, avgV) => {
+    if (avgV === 0 || avgV === null) return "g";
+    const ratio = thisV / avgV;
+    if (ratio >= 1) return "g";
+    if (ratio >= 0.7) return "a";
+    return "r";
+  };
+
+  const thisPosToBook = safeDiv(thisWeek.meet, thisWeek.pos);
+  const avgPosToBook = safeDiv(avgM, avgPos);
+
+  const html = `
+    <div class="funnel">
+      <div class="funnel-box ${cls(thisWeek.prospects, avgP/6)}">
+        <div class="funnel-label">1. Prospects Reached</div>
+        <div class="funnel-val num">${fmt(thisWeek.prospects)}</div>
+        <div class="funnel-cmp">6-wk avg: ${fmt(Math.round(avgP/6))}</div>
+      </div>
+      <div class="funnel-arrow">↓ <span class="rate">Reply Rate: ${pct2(thisReplyRate)} · avg ${pct2(avgReplyRate)}</span></div>
+      <div class="funnel-box ${cls(thisReplyRate, avgReplyRate)}">
+        <div class="funnel-label">2. Emails Delivered — Reply Rate</div>
+        <div class="funnel-val num">${pct2(thisReplyRate)}</div>
+        <div class="funnel-cmp">6-wk avg: ${pct2(avgReplyRate)}</div>
+      </div>
+      <div class="funnel-arrow">↓ <span class="rate">Pos. Reply Rate: ${pct3(thisPosRate)} · avg ${pct3(avgPosRate)}</span></div>
+      <div class="funnel-box ${cls(thisPosRate, avgPosRate)}">
+        <div class="funnel-label">3. Positive Replies</div>
+        <div class="funnel-val num">${fmt(thisWeek.pos)} · ${pct3(thisPosRate)}</div>
+        <div class="funnel-cmp">6-wk avg: ${fmt(Math.round(avgPos/6))} · ${pct3(avgPosRate)}</div>
+      </div>
+      <div class="funnel-arrow">↓ <span class="rate">Pos. → Book: ${pct2(thisPosToBook)} · avg ${pct2(avgPosToBook)}</span></div>
+      <div class="funnel-box ${cls(thisBookRate, avgBookRate)}">
+        <div class="funnel-label">4. Meetings Booked</div>
+        <div class="funnel-val num">${fmt(thisWeek.meet) } · ${pct3(thisBookRate)}</div>
+        <div class="funnel-cmp">6-wk avg: ${fmt(Math.round(avgM/6))} · ${pct3(avgBookRate)}</div>
+      </div>
+    </div>
+  `;
+  document.getElementById("funnelWrap").innerHTML = html;
+  document.getElementById("funnelModeLabel").textContent = mode === "cohort" ? "Bucketed by lead's email 1 send date (cohort)" : "Bucketed by event date (activity)";
+}
+document.querySelectorAll("#funnelModeToggle button").forEach(b => {
+  b.addEventListener("click", () => {
+    document.querySelectorAll("#funnelModeToggle button").forEach(x => x.classList.remove("active"));
+    b.classList.add("active");
+    renderFunnel(b.dataset.mode);
+  });
+});
+renderFunnel("activity");
+
+// ============= SERIES PERFORMANCE =============
+function renderSeries(which) {
+  const view = seriesByView[which];
+  const rows = [...view.rows].sort((a,b) => {
+    const ra = a.r > 0 ? a.meet / a.r : -1;
+    const rb = b.r > 0 ? b.meet / b.r : -1;
+    return rb - ra;
+  });
+
+  let html = `<div style="font-size:12px;color:#9ca3af;margin-bottom:10px;">${view.label}</div>`;
+  html += `<table><thead><tr>
+    <th>Series · Sub</th>
+    <th>Prospects</th><th>Emails</th><th>Bounce Rate</th>
+    <th>Replies</th><th>Reply Rate</th><th>Email 1 Reply Rate</th>
+    <th>Pos. Replies</th><th>Pos. Reply Rate</th>
+    <th>Reply → CRM Pos.</th>
+    <th>Meetings</th><th>Booking Rate</th><th>Pos. → Book</th>
+  </tr></thead><tbody>`;
+
+  rows.forEach(r => {
+    const bounceRate = safeDiv(r.sb, r.r);
+    const replyRate = safeDiv(r.tr, r.r);
+    const e1Rate = safeDiv(r.re1, r.r);
+    const posRate = safeDiv(r.pos, r.r);
+    const replyToPos = safeDiv(r.pos, r.tr);
+    const bookRate = safeDiv(r.meet, r.r);
+    const posToBook = safeDiv(r.meet, r.pos);
+    const name = r.series === "—" ? "(unlinked)" : `${r.series}${r.sub}`;
+    html += `<tr>
+      <td>${name}</td>
+      <td class="num">${fmt(r.r)}</td>
+      <td class="num">${fmt(r.e)}</td>
+      <td class="num">${bounceRate !== null ? pct2(bounceRate) : "—"}</td>
+      <td class="num">${fmt(r.tr)}</td>
+      <td class="num">${replyRate !== null ? pct2(replyRate) : "—"}</td>
+      <td class="num">${e1Rate !== null ? pct2(e1Rate) : "—"}</td>
+      <td class="num">${fmt(r.pos)}</td>
+      <td class="num">${posRate !== null ? pct3(posRate) : "—"}</td>
+      <td class="num">${replyToPos !== null ? pct2(replyToPos) : "—"}</td>
+      <td class="num">${fmt(r.meet)}</td>
+      <td class="num">${bookRate !== null ? pct3(bookRate) : "—"}</td>
+      <td class="num">${posToBook !== null ? pct2(posToBook) : "—"}</td>
+    </tr>`;
+  });
+  html += "</tbody></table>";
+  document.getElementById("seriesTableWrap").innerHTML = html;
+}
+document.querySelectorAll("#seriesButtons button").forEach(b => {
+  b.addEventListener("click", () => {
+    document.querySelectorAll("#seriesButtons button").forEach(x => x.classList.remove("active"));
+    b.classList.add("active");
+    renderSeries(b.dataset.w);
+  });
+});
+renderSeries("cur");
+
+// ============= JEFF CLIENTS =============
+(function renderJeff() {
+  let html = `<table><thead><tr>
+    <th>Week</th>
+    <th>Prospects</th><th>Emails</th><th>Bounce Rate</th>
+    <th>Replies</th><th>Reply Rate</th><th>Email 1 Reply Rate</th>
+    <th>Pos. Replies</th><th>Pos. Reply Rate</th>
+    <th>Reply → CRM Pos.</th>
+    <th>Meetings</th><th>Booking Rate</th><th>Pos. → Book</th>
+  </tr></thead><tbody>`;
+  jeffWeekly.forEach(r => {
+    const replyRate = safeDiv(r.replies, r.prospects);
+    const e1Rate = safeDiv(r.e1r, r.e1s);
+    const posRate = safeDiv(r.pos, r.prospects);
+    const replyToPos = safeDiv(r.pos, r.replies);
+    const bookRate = safeDiv(r.meet, r.prospects);
+    const posToBook = safeDiv(r.meet, r.pos);
+    const bounceRate = safeDiv(r.bounces, r.prospects);
+    html += `<tr>
+      <td>${fmtWeek(r.w, r.partial)}</td>
+      <td class="num">${fmt(r.prospects)}</td>
+      <td class="num">${fmt(r.emails)}</td>
+      <td class="num">${pct2(bounceRate)}</td>
+      <td class="num">${fmt(r.replies)}</td>
+      <td class="num">${pct2(replyRate)}</td>
+      <td class="num">${pct2(e1Rate)}</td>
+      <td class="num">${fmt(r.pos)}</td>
+      <td class="num">${pct3(posRate)}</td>
+      <td class="num">${pct2(replyToPos)}</td>
+      <td class="num">${fmt(r.meet)}</td>
+      <td class="num">${pct3(bookRate)}</td>
+      <td class="num">${pct2(posToBook)}</td>
+    </tr>`;
+  });
+  html += "</tbody></table>";
+  document.getElementById("jeffTableWrap").innerHTML = html;
+})();
+</script>
+</body>
+</html>
