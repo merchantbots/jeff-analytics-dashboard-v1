@@ -80,7 +80,7 @@
 <body>
 <div class="header">
   <h1>Jeff Analytics — MerchantBots</h1>
-  <div class="updated">Updated 2 Nov 2026, 12:12 AM IST</div>
+  <div class="updated">Updated 2 Nov 2026, 12:07 PM IST</div>
 </div>
 
 <!-- Section 1: Goal Pacing Banner -->
@@ -117,33 +117,34 @@
     <div class="progress"><div class="progress-fill fill-red" style="width: 0%"></div></div>
     <span class="badge red">0% · BEHIND</span>
   </div>
-  <!-- Build ~00:02-00:10 IST Mon Nov 2 2026 (cloud routine, fresh clone). Every number below re-queried
-       this cycle; nothing carried forward from the 1 Nov 6:07 PM build.
-       WEEK ROLLOVER: today is Monday Nov 2, ~00:07 IST — the week of Oct 26 - Nov 1 that was "current
-       (partial)" in the last build is now a COMPLETE week, and a brand-new current week (Nov 2 - Nov 8,
-       day 1/7) has just begun. A direct daily query for Nov 2 returned "No data found" (zero sends, zero
-       CRM events so far) -> 0/30 meetings, 0/100 pos. replies this week.
+  <!-- Build ~12:03-12:07 IST Mon Nov 2 2026 (cloud routine, fresh clone). Every number below re-queried
+       this cycle; nothing carried forward from the 12:12 AM build.
+       Current week is still Mon Nov 2 - Sun Nov 8 (day 1/7), now ~12 hours in. A fresh daily query for
+       Nov 2 (through noon IST) still returns prospects_reached=0 / email_1_sent=0 / crm_meetings_booked=0 /
+       crm_positive_replies=0 — zero movement since the 12:12 AM build. Re-queried twice to confirm this
+       isn't a stale/cached result; both pulls agree. Consistent with the campaigns' US-business-hours send
+       window not having started yet by noon IST (the Oct 19/26 Monday rows only populate once queried
+       later in the IST day) — not broken data.
        Weekly ratio = (count/goal)/(day_elapsed/7), day_elapsed=1 (Monday): both ratios are 0/anything = 0
-       -> RED BEHIND for both tiles. This is the real ratio (day_elapsed is nonzero, so it is not the
-       zero-denominator special case) — expected for the first minutes of a new week, not broken data.
+       -> RED BEHIND for both tiles, unchanged from the 12:12 AM build.
        Monthly tiles: Nov MTD (Nov 1 - Nov 2, granularity=all, direct pull) = 2 meetings / 0 positive
-       replies. The 2 meetings are the same CRM transitions first seen in the 1 Nov 6:07 PM build, logged
-       on Sunday Nov 1 despite zero sends that day. Weekdays elapsed 1/21 (Nov 1 was Sunday and doesn't
-       count; Nov 2 Monday is the first elapsed weekday) — confirmed via an independent weekday count.
+       replies — identical to the 12:12 AM build (no new CRM activity logged since). Weekdays elapsed
+       still 1/21 (Nov 1 was Sunday; Nov 2 Monday is the only elapsed weekday so far).
        Ratio = (count/goal)/(day_elapsed/days_in_month): meetings (2/120)/(1/21)=0.350 -> RED BEHIND;
-       pos. replies (0/400)/(1/21)=0 -> RED BEHIND. NOTE: the prior build rendered Nov MTD meetings as
-       AHEAD under the zero-denominator special case (0/21 weekdays elapsed that build). Now that a real
-       weekday has elapsed, the same 2-meeting count produces a real (low) ratio and flips to RED BEHIND —
-       the formula working as intended on the month's first sending day, not a new data problem.
-       Weekly Review (Section 3A) top row: Mon Oct 26 - Sun Nov 1 is now the most recent COMPLETE week —
-       crm_meetings_booked=18, crm_positive_replies=77, cross-checked against Series Performance "Last 1
-       week" (28+18+0+31=77 pos, 7+9+0+2=18 meet, 14355+14405+0+1992=30752 prospects — exact match).
+       pos. replies (0/400)/(1/21)=0 -> RED BEHIND.
+       Weekly Review (Section 3A) top complete row: Mon Oct 26 - Sun Nov 1 — crm_meetings_booked=18,
+       crm_positive_replies=77, cross-checked against Series Performance "Last 1 week" (28+18+0+31=77 pos,
+       7+9+0+2=18 meet, 14355+14405+0+1992=30752 prospects — exact match), re-verified via fresh query
+       this build.
        Spot Check 1 (transition-period weekly prospects): N/A — rendered weekly window (Aug 24 - Nov 1) is
        entirely after both transition dates (Nexus 2026-03-30, Mr. Prime 2026-04-15).
        COHORT MODE AVAILABLE this build — 16-day daily and 11-week weekly cohort pulls both succeeded, no
        timeouts (weekend days with no email_1 sends return no row; rendered as explicit zero rows).
-       Series 10 (listed Active in CLAUDE.md): smartlead_list_campaigns(series=10, status=ACTIVE) returned
-       zero campaigns this build — reconfirmed retired, consistent with every prior build. -->
+       OPS NOTE: the 5 dashboard builds between the 10/31 12:14 AM push and this run's start (10/31 12:17 PM
+       through 11/2 12:12 AM) were committed locally but never reached origin/main — a prior session ended
+       on a detached HEAD and `git push origin main` silently no-opped. Recovered this run by fast-forwarding
+       local main to that HEAD and pushing before starting today's build; GitHub Pages was serving the
+       10/31 12:14 AM snapshot for ~36h as a result. -->
 </div>
 
 <!-- Tabs -->
@@ -264,7 +265,7 @@
 <script>
 // ============= DATA =============
 // All figures pulled fresh from the Jeff Analytics MCP this build (cloud routine, fresh clone, ran
-// ~00:02-00:10 IST Mon Nov 2 2026). Nothing carried forward from the 1 Nov 6:07 PM build — every query
+// ~12:03-12:07 IST Mon Nov 2 2026). Nothing carried forward from the 12:12 AM build — every query
 // below was run this cycle.
 //
 // genuine_replies / genuine_reply_rate / genuine_replies_email_1 remain absent from the metric catalog
@@ -281,12 +282,11 @@
 // timeouts. Cohort days with no email_1 sends (weekends) return no row from the API — rendered as explicit
 // zero rows so the 16-day axis stays continuous.
 //
-// WEEK ROLLOVER: today is Monday Nov 2, ~00:07 IST. The week of Oct 26 - Nov 1 that was "current
-// (partial)" in the last build is now a COMPLETE week in the Weekly Review table (top non-partial row),
-// and a brand-new, essentially-empty current week (Nov 2 - Nov 8) takes the top (partial) slot. The Series
-// Performance "Current week" button has zero rows this build — no sends have happened yet in the first
-// few minutes of the new week. The Funnel Diagnostic's "this week" box is therefore also all-zero this
-// build (red across all 4 steps) — expected given the ~5-minute-old week, not broken data.
+// STILL DAY 1/7: today is Monday Nov 2, now ~12 hours into the new week (Nov 2 - Nov 8). A fresh daily
+// query for Nov 2 through noon IST still returns all zeros — re-queried twice to confirm, consistent with
+// the campaigns' US-business-hours send window not having started yet by midday IST, not broken data. The
+// Series Performance "Current week" button therefore still has zero rows this build. The Funnel
+// Diagnostic's "this week" box is therefore also all-zero this build (red across all 4 steps).
 //
 // RECONCILIATION: crm_positive_replies/crm_meetings_booked sum exactly between the Series Performance
 // group_by=series,sub_series rows and the matching Weekly Review week-sum across all 4 non-empty toggle
@@ -313,12 +313,13 @@
 // all 4 non-empty windows, prospects exact for 3 of 4, off by 2 on the 4th — negligible drift).
 const cohortAvailable = true;
 // WINDOW: "yesterday" is Nov 1 (Sun). Daily/Sequence windows are the last 16 days through yesterday
-// (Oct 17 - Nov 1). Weekly Review shows the last 10 complete weeks (Aug 24 - Nov 1) plus the brand-new
-// current partial week (Nov 2 - Nov 8). Series Performance "Last 1-4 weeks" = the most recent complete
+// (Oct 17 - Nov 1). Weekly Review shows the last 10 complete weeks (Aug 24 - Nov 1) plus the current
+// partial week (Nov 2 - Nov 8). Series Performance "Last 1-4 weeks" = the most recent complete
 // weeks: Last 1 = Oct 26 - Nov 1, Last 4 = Oct 5 - Nov 1.
-// MB week-to-date (Nov 2 - Nov 8, day 1/7): 0/30 meetings and 0/100 positive replies — the week just began.
+// MB week-to-date (Nov 2 - Nov 8, day 1/7, ~12h in): 0/30 meetings and 0/100 positive replies — unchanged
+// since the 12:12 AM build.
 // November MTD (day 1/21 weekdays): 2/120 meetings (ratio 0.350 -> RED BEHIND) and 0/400 positive replies
-// (ratio 0 -> RED BEHIND).
+// (ratio 0 -> RED BEHIND) — unchanged since the 12:12 AM build.
 
 // Daily 16-day data (activity mode) — Oct 17 - Nov 1, MB clients 108917,82914,51431,33748
 const dailyActivity = [
@@ -381,8 +382,8 @@ const sequence = [
   {d:"2026-11-01",dow:"Sun",e1:0,   e2:0,   e3:0,pos:0},
 ];
 
-// Weekly data (activity) — MB clients, current partial week (Mon Nov 2 - Sun Nov 8, ~5 min old, all zero)
-// + last 10 complete weeks (Aug 24 - Nov 1). All 11 rendered weeks fall after both the Nexus
+// Weekly data (activity) — MB clients, current partial week (Mon Nov 2 - Sun Nov 8, ~12h in, still all
+// zero) + last 10 complete weeks (Aug 24 - Nov 1). All 11 rendered weeks fall after both the Nexus
 // (2026-03-30) and Mr. Prime (2026-04-15) transition dates — no transition-date adjustment applies
 // (Spot Check 1: N/A, rendered window Aug 24 - Nov 1 is entirely post-transition).
 // Fields: w (Mon), partial, prospects, unique, emails, e1s, replies, e1r, bounces, pos, meet
@@ -416,12 +417,12 @@ const weeklyCohort = [
 ];
 
 // Series performance — fresh this build: current week-to-date (Nov 2 - Nov 8, group_by=series,sub_series,
-// granularity=all) returned NO ROWS (zero sends in the ~5-minute-old week) plus four independent
+// granularity=all) returned NO ROWS (still zero sends ~12h into the week) plus four independent
 // granularity=all pulls for Last 1/2/3/4 complete weeks. CRM fields (pos, meet) reconcile EXACTLY to the
 // matching Weekly Review week-sum for every one of the 4 non-empty Series Performance toggle windows (see
 // RECONCILIATION note above).
 const seriesByView = {
-  cur: { label: "Current week (partial) — Nov 2 – Nov 8 (no sends yet)", rows: [
+  cur: { label: "Current week (partial) — Nov 2 – Nov 8 (no sends yet, ~12h in)", rows: [
   ]},
   "1": { label: "Last 1 week — Oct 26 – Nov 1", rows: [
     {series:"6", sub:"E",r:14355,e:27033,tr:547, re1:478,sb:571,pos:28,meet:7},
@@ -452,7 +453,7 @@ const seriesByView = {
   ]},
 };
 
-// Jeff clients weekly (activity) — current partial week (Nov 2 - Nov 8, no sends yet) + last 4 complete
+// Jeff clients weekly (activity) — current partial week (Nov 2 - Nov 8, no sends yet, ~12h in) + last 4 complete
 // weeks (Oct 5 - Nov 1).
 const jeffWeekly = [
   {w:"2026-11-02",partial:true, prospects:0,    emails:0,    e1s:0,    replies:0,  e1r:0,  bounces:0,  pos:0,meet:0},
