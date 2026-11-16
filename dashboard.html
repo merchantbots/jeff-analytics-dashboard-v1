@@ -80,7 +80,7 @@
 <body>
 <div class="header">
   <h1>Jeff Analytics — MerchantBots</h1>
-  <div class="updated">Updated 16 Nov 2026, 12:11 PM IST</div>
+  <div class="updated">Updated 16 Nov 2026, 6:06 PM IST</div>
 </div>
 
 <!-- Section 1: Goal Pacing Banner -->
@@ -117,19 +117,19 @@
     <div class="progress"><div class="progress-fill fill-red" style="width: 15.50%"></div></div>
     <span class="badge red">16% · BEHIND</span>
   </div>
-  <!-- Build ~12:02-12:11 PM IST Mon Nov 16 2026 (cloud routine). Every number below was pulled fresh this
-       cycle via 20 independent smartlead_query_funnel calls; nothing carried forward from the prior (12:09 AM
-       same-day) build. Current week (Nov 16 - Nov 22) is still genuinely near-zero for sends — Nov 16 itself
-       has had zero prospects_reached/emails_sent through this build time (confirmed by a fresh re-query), but
-       a handful of stray replies landed on already-sent leads since midnight: 3 total_replies / 2
-       replies_email_1 on the MB weekly-review current-partial-week row (2 on series 6E, 1 on 11B — both with
-       zero sends this week, i.e. replies to prior weeks' outreach) and 5 total_replies / 5 replies_email_1 on
-       the Jeff current-partial-week row. CRM meetings/positive-replies remain 0 for the current week (both
-       goal-banner tiles and Weekly Review), confirmed by an explicit fresh re-query at build time.
+  <!-- Build ~6:03-6:06 PM IST Mon Nov 16 2026 (cloud routine). Every number below was pulled fresh this
+       cycle via 13 independent smartlead_query_funnel calls; nothing carried forward from the prior (12:11 PM
+       same-day) build. Current week (Nov 16 - Nov 22) remains genuinely zero for CRM outcomes — Nov 16 itself
+       still shows zero prospects_reached/emails_sent through this build time (confirmed by fresh re-query:
+       total_emails_sent=0 for 2026-11-16 alone). The same stray-reply residue as the 12:11 PM build persists
+       unchanged: 3 total_replies / 2 replies_email_1 on the MB weekly-review current-partial-week row (2 on
+       series 6E, 1 on 11B) and 5 total_replies / 5 replies_email_1 on the Jeff current-partial-week row. CRM
+       meetings/positive-replies remain 0 for the current week (both goal-banner tiles and Weekly Review),
+       confirmed by an explicit fresh re-query at build time.
        Weekly pace ratio = (count/goal)/(day-of-week elapsed/7): today is Monday, day 1/7 elapsed, so
        meetings (0/30)/(1/7) = 0.000 and pos. replies (0/100)/(1/7) = 0.000 — both RED BEHIND (<0.80).
        Monthly pace ratio = (count/goal)/(weekdays elapsed/weekdays in month) = (26/120)/(11/21) = 0.414 for
-       meetings and (62/400)/(11/21) = 0.296 for pos. replies — both RED BEHIND, byte-identical to the 12:09 AM
+       meetings and (62/400)/(11/21) = 0.296 for pos. replies — both RED BEHIND, byte-identical to the 12:11 PM
        build (Nov 16 has contributed zero MTD CRM activity so far, confirmed by fresh re-query). Nov 2026 has
        21 weekdays total; 11 have elapsed (Nov 2-6, Nov 9-13, and today Nov 16 itself, counted as elapsed per
        spec "through today inclusive").
@@ -141,7 +141,7 @@
        transition dates, so no client_id adjustment applies to any rendered week. Verified instead via
        Series Performance-to-Weekly Review reconciliation (see HTML comment in &lt;script&gt; below): Last 1
        week reconciled EXACTLY on every field; Last 2/3/4 weeks reconciled exactly on prospects/bounces/pos/
-       meet, with total_replies/email_1_reply undercounting by the documented ~4% unlinked-to-series artifact
+       meet, with total_replies undercounting by the documented ~4% unlinked-to-series artifact
        (124/2,962 = 4.2% this cycle on Last 4 weeks) — not a bug.
        METRIC SCHEMA NOTE: genuine_replies / genuine_reply_rate / genuine_replies_email_1 remain absent from
        smartlead_metric_definitions (EQU-650 merged genuine/auto_reply into one "reply" class permanently,
@@ -150,10 +150,12 @@
        wording, forced by the data layer. Likewise crm_positive_reply_rate / crm_booking_rate /
        reply_to_crm_positive_rate are rejected by the API when filtered by client_id, so every rate on this
        dashboard is computed client-side from raw counts, per spec.
-       COHORT MODE: available this build — the 10-complete-week weekly cohort pull succeeded (one retry after
-       an initial 60s timeout; no chunking needed) and the 16-day daily cohort pull succeeded single-shot.
-       Toggle enabled dashboard-wide. Per spec, cohort days with zero email_1 sends (weekends) return no row
-       from the MCP — rendered here as explicit zero rows so the 16-day axis stays continuous.
+       COHORT MODE: available this build — the 10-complete-week weekly cohort pull and the 16-day daily
+       cohort pull both succeeded single-shot, zero timeouts, zero chunking. Toggle enabled dashboard-wide.
+       Per spec, cohort rows with zero email_1 sends return no row from the MCP — rendered here as explicit
+       zero rows: the 6 weekend days in the 16-day window (Oct 31, Nov 1, Nov 7, Nov 8, Nov 14, Nov 15), plus
+       — new this build — the current partial week (Nov 16-22) in the Weekly Review/Trends/Funnel cohort view,
+       since the cohort query returned no row for a week with zero email_1 sends so far.
        ANOMALY (standing, unchanged): email_3_sent is 0 for all 16 rendered days (Oct 31 - Nov 15) again. -->
 </div>
 
@@ -274,18 +276,17 @@
 
 <script>
 // ============= DATA =============
-// All figures pulled fresh from the Jeff Analytics MCP this build (cloud routine, ran ~12:02-12:11 PM IST
-// Mon Nov 16 2026; the prior build was 12:09 AM IST the same day). Nothing carried forward from that prior
-// build — all 20 queries below were run fresh this cycle via smartlead_query_funnel.
+// All figures pulled fresh from the Jeff Analytics MCP this build (cloud routine, ran ~6:03-6:06 PM IST
+// Mon Nov 16 2026; the prior build was 12:11 PM IST the same day). Nothing carried forward from that prior
+// build — all 13 queries below were run fresh this cycle via smartlead_query_funnel.
 //
-// SAME-DAY MIDDAY BUILD — "yesterday" is still Nov 15 (Sun) and the 16-day Daily Trend / Sequence windows
+// SAME-DAY EVENING BUILD — "yesterday" is still Nov 15 (Sun) and the 16-day Daily Trend / Sequence windows
 // are unchanged (Oct 31 - Nov 15), since today is still Mon Nov 16. The 10-complete-weeks window (Sep 7 -
-// Nov 15) and the current partial week (Nov 16 - Nov 22) are also unchanged in identity from the 12:09 AM
-// build. What changed since midnight: a handful of stray replies landed on already-sent leads (3 total on
-// the MB weekly current-week row, 5 on the Jeff current-week row — both with zero NEW sends today), plus a
-// documented +1 "late-arriving classification" drift on series 11B's reply/email_1_reply counts across every
-// Series Performance window (confirmed via independent fresh re-query, not carried forward). CRM
-// positive-replies/meetings are byte-identical to midnight — still 0 for the current week, still 62/26 MTD.
+// Nov 15) and the current partial week (Nov 16 - Nov 22) are also unchanged in identity from the 12:11 PM
+// build. Reconciled every figure below against the 12:11 PM build via independent fresh queries: BYTE-
+// IDENTICAL across all 13 pulls — zero new sends, zero new CRM activity, zero drift anywhere (daily,
+// sequence, weekly, series, Jeff) since midday. CRM positive-replies/meetings remain 0 for the current week,
+// still 62/26 MTD.
 //
 // genuine_replies / genuine_reply_rate / genuine_replies_email_1 remain absent from the metric catalog
 // (EQU-650 merged genuine+auto_reply into a single "reply" class permanently, reconfirmed via a live
@@ -299,8 +300,9 @@
 //
 // COHORT MODE AVAILABLE this build: the full 10-complete-week weekly cohort pull and the 16-day daily cohort
 // pull both succeeded single-shot with zero timeouts. Cohort toggle enabled dashboard-wide. Per spec, cohort
-// days with no email_1 sends (weekends) return no row from the MCP — Oct 31, Nov 1, Nov 7, Nov 8, Nov 14,
-// Nov 15 are rendered below as explicit zero-value rows so the 16-day axis stays continuous.
+// rows with no email_1 sends return no row from the MCP — Oct 31, Nov 1, Nov 7, Nov 8, Nov 14, Nov 15 (daily)
+// plus the current partial week Nov 16-22 (weekly) are rendered below as explicit zero-value rows so the
+// axes stay continuous.
 //
 // RECONCILIATION: Series Performance group_by=series,sub_series sums vs the matching Weekly Review week-sum
 // this build — Last 1 week (Nov 9-15) reconciled EXACTLY on every field including total_replies: 16,192 +
@@ -323,7 +325,7 @@
 // transition dates. Cross-checked instead via the RECONCILIATION note above, which reconciled exactly
 // (aside from the documented total_replies/email_1_reply artifact).
 const cohortAvailable = true;
-// WINDOW: "yesterday" is Nov 15 (Sun), today is Mon Nov 16 (midday IST). Daily/Sequence windows are the last
+// WINDOW: "yesterday" is Nov 15 (Sun), today is Mon Nov 16 (evening IST). Daily/Sequence windows are the last
 // 16 days through yesterday (Oct 31 - Nov 15). Weekly Review shows the last 10 complete weeks (Sep 7 - Nov
 // 15) plus the current week (Nov 16 - 22, still near-zero) as its top row. Series Performance / Jeff
 // "Last 1-4 weeks" = the most recent complete weeks excluding the current week: Last 1 = Nov 9 - Nov 15,
@@ -331,7 +333,7 @@ const cohortAvailable = true;
 // MB week-to-date (Nov 16 - Nov 22): 0/30 meetings and 0/100 positive replies, both RED BEHIND (pace ratio
 // 0.000 / 0.000, day-of-week elapsed 1/7) — no CRM outcomes yet, confirmed by fresh re-query at build time.
 // November MTD (day 11/21 weekdays): 26/120 meetings (ratio 0.414 -> RED BEHIND) and 62/400
-// positive replies (ratio 0.296 -> RED BEHIND) — byte-identical to the 12:09 AM build; Nov 16 has
+// positive replies (ratio 0.296 -> RED BEHIND) — byte-identical to the 12:11 PM build; Nov 16 has
 // contributed zero MTD CRM activity so far.
 
 // Daily 16-day data (activity mode) — Oct 31 - Nov 15, MB clients 108917,82914,51431,33748
@@ -414,7 +416,8 @@ const weeklyActivity = [
   {w:"2026-09-07",partial:false,prospects:14892,unique:13569,emails:28536,e1s:14892,replies:593, e1r:482,bounces:354, pos:43,meet:7},
 ];
 
-// Weekly data (COHORT mode) — same 11-row window. Row 0 is the new current partial week (Nov 16-22, zero).
+// Weekly data (COHORT mode) — same 11-row window. Row 0 is the current partial week (Nov 16-22); the cohort
+// query returned no row for it (zero email_1 sends so far this week), rendered here as an explicit zero row.
 const weeklyCohort = [
   {w:"2026-11-16",partial:true, prospects:0,    unique:0,    emails:0,    e1s:0,    replies:0,  e1r:0,  bounces:0,  pos:0, meet:0},
   {w:"2026-11-09",partial:false,prospects:29747,unique:25752,emails:46128,e1s:31369,replies:461, e1r:435,bounces:882, pos:20,meet:4},
