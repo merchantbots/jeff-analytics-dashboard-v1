@@ -80,7 +80,7 @@
 <body>
 <div class="header">
   <h1>Jeff Analytics — MerchantBots</h1>
-  <div class="updated">Updated 28 Nov 2026, 1:06 PM IST</div>
+  <div class="updated">Updated 28 Nov 2026, 6:16 PM IST</div>
 </div>
 
 <!-- Section 1: Goal Pacing Banner -->
@@ -117,12 +117,12 @@
     <div class="progress"><div class="progress-fill fill-red" style="width: 26.50%"></div></div>
     <span class="badge red">27% · BEHIND</span>
   </div>
-  <!-- Fresh goal-banner queries this build (cloud routine, ~1:03-1:06 PM IST Sat Nov 28 2026; prior build was
-       ~12:05-12:18 AM IST same day). Weekly row = single daily-granularity call for Nov 23-28 (today, Saturday)
+  <!-- Fresh goal-banner queries this build (cloud routine, ~6:03-6:16 PM IST Sat Nov 28 2026; prior build was
+       ~1:03-1:06 PM IST same day). Weekly row = single daily-granularity call for Nov 23-28 (today, Saturday)
        -> Nov 23: 3 pos/1 meet; Nov 24: 4 pos/0 meet; Nov 25: 1 pos/0 meet; Nov 26: 4 pos/1 meet; Nov 27: 4
        pos/1 meet; Nov 28 (today): 0 pos/0 meet (no rows yet, Saturday, no sending and no new CRM activity).
-       Week total = 3 meetings / 16 positive replies — UNCHANGED from the 12:18 AM build; no new CRM activity
-       in the ~13 hours since. Monthly row = single granularity=all call for Nov 1-28 -> 38 meetings / 106
+       Week total = 3 meetings / 16 positive replies — UNCHANGED from the 1:06 PM build; no new CRM activity
+       in the ~5 hours since. Monthly row = single granularity=all call for Nov 1-28 -> 38 meetings / 106
        positive replies — also unchanged. Week-to-date ratio uses day-of-week elapsed 6/7 (today is Saturday,
        counting today per the standing convention, see CLAUDE.md Saturday rule) -> (3/30)/(6/7)=0.1167 and
        (16/100)/(6/7)=0.1867, both RED BEHIND. Month ratio uses day 20/21 weekdays (Nov weekdays
@@ -247,19 +247,20 @@
 
 <script>
 // ============= DATA =============
-// All figures pulled fresh from the Jeff Analytics MCP this build (cloud routine, ~12:50 PM-1:06 PM IST Sat
-// Nov 28 2026; prior build was ~12:05-12:18 AM IST same day). Nothing carried forward — every number below
+// All figures pulled fresh from the Jeff Analytics MCP this build (cloud routine, ~6:03-6:16 PM IST Sat
+// Nov 28 2026; prior build was ~12:50 PM-1:06 PM IST same day). Nothing carried forward — every number below
 // traces to a fresh smartlead_query_funnel call run this cycle. genuine_replies / genuine_reply_rate /
 // genuine_replies_email_1 remain permanently absent from the catalog (EQU-650 merged genuine+auto_reply into
 // a single "reply" class, re-confirmed this cycle via a fresh smartlead_metric_definitions call). total_replies
 // / reply_rate / replies_email_1 stand in throughout, under "Reply Rate" / "Email 1 Reply Rate" headers — a
-// standing, known deviation from CLAUDE.md's genuine_replies wording, forced by the data layer. This is a
-// backend schema change (not a dashboard bug) and has been flagged to the user directly this build.
+// standing, known deviation from CLAUDE.md's genuine_replies wording, forced by the data layer, flagged in
+// every build since it was discovered; not re-flagged as new this cycle.
 //
 // crm_positive_reply_rate, crm_booking_rate and reply_to_crm_positive_rate carry a documented
 // agency-vs-client_id attribution mismatch (rejected whenever grouped or filtered by client_id, which every
-// query on this dashboard does), so every rate here is computed client-side from raw counts, per spec — no
-// rate metric was requested from the MCP this cycle, only counts.
+// query on this dashboard does — confirmed again this cycle via a live MCP error on a direct attempt), so
+// every rate here is computed client-side from raw counts, per spec — no rate metric was requested from the
+// MCP this cycle, only counts.
 //
 // SATURDAY RULE (CLAUDE.md, Section 3A): today is a Saturday, so the current Mon-Fri (Nov 23-27) is treated as
 // a COMPLETE week for sending purposes, not a partial one — no weekend sending happens regardless, so a week
@@ -268,40 +269,40 @@
 // "Current week" button is a distinct concept (week-to-date, explicitly defined to surface a newly-launched
 // series the moment it starts sending) and keeps its own "(partial)" label regardless of this rule.
 //
-// MCP RELIABILITY THIS BUILD: rough. unique_prospects_reached timed out at every granularity wider than one
-// week when combined with other metrics, and even alone across the full 11-week range; every other weekly
-// pull above ~2 weeks wide also timed out at least once. Resolved by chunking to 1-2 week windows (and
-// unique_prospects_reached to single weeks) and summing client-side; every independently re-pulled historical
-// (already-complete) week matches the prior build's rendered value exactly digit-for-digit, so the chunking
-// introduced no data error. Cohort mode: see below.
+// MCP RELIABILITY THIS BUILD: rough again, same pattern as recent builds — wide weekly-granularity pulls
+// (6+ weeks) and the reply_to_crm_positive_rate rate-metric form both failed (timeout / explicit rejection),
+// resolved by chunking to 2-6 week windows and dropping the rejected rate in favor of its underlying counts.
+// Every independently re-pulled HISTORICAL complete week (Sep 14 - Nov 22, 10 weeks) matches the prior
+// build's rendered ungrouped weekly totals exactly digit-for-digit. One real (not new, but newly-measured)
+// data-layer behavior found this cycle: at the series+sub_series GROUP-BY grain, total_replies for
+// already-complete weeks reads slightly LOWER this cycle than in the prior build for the same weeks (6E
+// Last-4-weeks: 1,563 -> 1,512; 11B: 1,058 -> 997; 13G: 108 -> 104), while replies_email_1, smtp_bounces,
+// crm_positive_replies and crm_meetings_booked all match exactly at the same grain, and the UNGROUPED weekly
+// total_replies for those same weeks also still matches exactly. This isolates the drift to total_replies
+// specifically re-bucketing across series/sub_series after the fact (not a volume loss, a reclassification) —
+// informational, does not affect any CRM/goal figure, not escalated.
 //
-// COHORT MODE: UNAVAILABLE this build. A minimal single-day/single-metric probe (2026-11-20,
-// prospects_reached + crm_positive_replies only) timed out twice in a row. Per the standing rule (two repeated
-// timeouts on a minimal probe = unavailable), cohort toggles are DISABLED dashboard-wide this build.
+// COHORT MODE: UNAVAILABLE this build. A minimal single-day/single-metric probe (2026-11-27,
+// crm_positive_replies only) timed out. Per the standing rule (repeated timeouts on a minimal probe =
+// unavailable), cohort toggles are DISABLED dashboard-wide this build — unchanged from recent builds.
 //
 // RECONCILIATION (clean this cycle): the Series Performance "Current week" pull (6E 10 pos/2 meet + 11B 6
 // pos/1 meet = 16 pos / 3 meet) matches the Weekly Review Nov 23 row (16 pos / 3 meet) and the goal-banner
-// daily sum (3+4+1+4+4+0=16 pos; 1+0+0+1+1+0=3 meet) EXACTLY, all three paths agree. The Series Performance
-// "Last 4 weeks" window now also reconciles EXACTLY against the Weekly Review's sum of the same 4 calendar
-// weeks: 71 (6E) + 61 (11B) + 0 (11C) + 33 (13G) + 1 (5B) + 1 (unlinked) = 167 pos. replies, matching
-// 28+30+32+77 = 167 from the Weekly Review rows for Nov 16/09/02 and Oct 26. Prior builds' own Last-4-weeks
-// series sum (106) appears to have dropped 11B's 61 positive replies in error — this cycle's pull captures all
-// series rows correctly and the gap previously flagged as a standing backend anomaly does NOT reproduce here.
+// daily sum (3+4+1+4+4+0=16 pos; 1+0+0+1+1+0=3 meet) EXACTLY, all three paths agree.
 //
-// CHANGE SINCE 12:18 AM BUILD: no new CRM activity in the ~13 hours since — week-to-date and month-to-date
-// meetings/positive replies are byte-identical (3/16 week, 38/106 month). Nov 27 send-volume continued
-// settling (prospects 2,520 -> 3,692; emails 3,900 -> 8,747), consistent with the prior build's own flagged
-// settling-lag anomaly resolving as expected. All other historical days/weeks are unchanged from the prior
-// build, confirmed field-for-field.
+// CHANGE SINCE 1:06 PM BUILD: no new CRM activity in the ~5 hours since — week-to-date and month-to-date
+// meetings/positive replies are byte-identical (3/16 week, 38/106 month). Nov 23 (now a fully-elapsed day)
+// continued minor settling (replies 721->723, bounces 920->925), ordinary late-arriving-reply/bounce lag.
+// All 10 fully-historical weeks (Sep 14 - Nov 22) are unchanged from the prior build, confirmed field-for-field.
 //
 // ANOMALY (standing, unchanged): email_3_sent remains 0 for all 16 rendered days (Nov 12-27) across many
 // consecutive builds.
 //
 // ANOMALY (standing, unchanged): series 5 (sub-series B) and an unlinked (blank-series) row continue to appear
-// in Series Performance Last-1/2/3/4-week windows (not in the current week) with CRM positive replies/meetings
-// credited but 0 (blank) prospects/emails — not on CLAUDE.md's MerchantBots series list (active: 6, 10, 11, 13;
-// paused: 15). Likely legacy/carryover CRM credit. Rendered as-is (all rows shown in full white per spec). The
-// 11C row in the Last-4-weeks window (1 total_reply, 0 elsewhere) is also unchanged.
+// in Series Performance Last-2/3/4-week windows (not in the current week or Last-1-week) with CRM positive
+// replies/meetings credited but 0 (blank) prospects/emails — not on CLAUDE.md's MerchantBots series list
+// (active: 6, 10, 11, 13; paused: 15). Likely legacy/carryover CRM credit. Rendered as-is (all rows shown in
+// full white per spec). The 11C row in the Last-4-weeks window (1 total_reply, 0 elsewhere) is also unchanged.
 //
 // ANOMALY (Jeff Clients tab, standing from prior builds, not independently re-decomposed this cycle): prior
 // per-client breakdowns found Riverguide (25948) and Accelo Brand (223329) returning zero SmartLead-side
@@ -310,18 +311,17 @@
 //
 // STANDOUT: sub-series 13G holds the field's strongest pos.-reply signal over the Last 4 complete weeks
 // (Oct 26 - Nov 22): 33 pos. replies / 1,992 prospects = 1.657%, vs 6E's 71/57,768 = 0.123% and 11B's
-// 61/57,787 = 0.106% — roughly 13.5-15.7x. Unchanged window and figures vs the 12:18 AM build (hasn't rolled
+// 61/57,787 = 0.106% — roughly 13.5-15.7x. Unchanged window and figures vs the 1:06 PM build (hasn't rolled
 // yet — next Monday rolls it to Nov 2 - Nov 29).
 //
 // SPOT CHECK 1 (transition-period weekly prospects): N/A this build — the rendered weekly window
 // (Sep 14 2026 - Nov 29 2026) is entirely after both the Nexus (2026-03-30) and Mr. Prime (2026-04-15)
 // transition dates, so no client_id adjustment applies to any rendered week; every pull used the correct
 // 4-client MB filter. Substitute verification performed instead (see RECONCILIATION above): Nov 23 week's
-// prospects and CRM outcomes reconcile exactly across the goal banner, Weekly Review, and Series Performance
-// pulls, and the Last-4-weeks Series Performance total now reconciles exactly against Weekly Review too —
-// strong evidence the 4-client filter and the data layer are both behaving correctly.
+// CRM outcomes reconcile exactly across the goal banner, Weekly Review, and Series Performance pulls — strong
+// evidence the 4-client filter and the data layer are both behaving correctly.
 const cohortAvailable = false;
-// WINDOW: today is Sat Nov 28, this build ~12:50 PM-1:06 PM IST (prior build was ~12:05-12:18 AM IST same
+// WINDOW: today is Sat Nov 28, this build ~6:03-6:16 PM IST (prior build was ~12:50 PM-1:06 PM IST same
 // day). "Yesterday" is Fri Nov 27. Daily/Sequence windows are the last 16 days through yesterday
 // (Nov 12 - Nov 27). Nov 14-15, 21-22 (weekends) read 0 prospects/emails/e1 in activity mode — NORMAL weekend
 // behavior (no sending Sat/Sun per CLAUDE.md), not a reporting lag; small nonzero reply/pos counts on weekend
@@ -392,7 +392,7 @@ const sequence = [
 // even combined with just one other metric.
 // Fields: w (Mon), partial, prospects, unique, emails, e1s, replies, e1r, bounces, pos, meet
 const weeklyActivity = [
-  {w:"2026-11-23",partial:false,prospects:25122,unique:22834,emails:45590,e1s:25122,replies:721, e1r:598, bounces:920, pos:16,meet:3},
+  {w:"2026-11-23",partial:false,prospects:25122,unique:22834,emails:45590,e1s:25122,replies:723, e1r:599, bounces:925, pos:16,meet:3},
   {w:"2026-11-16",partial:false,prospects:29925,unique:25479,emails:57164,e1s:29925,replies:590, e1r:465, bounces:1468,pos:28,meet:9},
   {w:"2026-11-09",partial:false,prospects:29747,unique:25752,emails:57969,e1s:29747,replies:575, e1r:437, bounces:966, pos:30,meet:10},
   {w:"2026-11-02",partial:false,prospects:27123,unique:24223,emails:50191,e1s:27123,replies:558, e1r:426, bounces:1007,pos:32,meet:14},
@@ -417,8 +417,8 @@ const weeklyCohort = [];
 // sum EXACTLY (see RECONCILIATION note above).
 const seriesByView = {
   cur: { label: "Current week (partial) — Nov 23 – Nov 28", rows: [
-    {series:"6", sub:"E",r:12720,e:21798,tr:521,re1:451,sb:428,pos:10,meet:2},
-    {series:"11",sub:"B",r:12402,e:23792,tr:200,re1:147,sb:492,pos:6,meet:1},
+    {series:"6", sub:"E",r:12720,e:21798,tr:522,re1:451,sb:430,pos:10,meet:2},
+    {series:"11",sub:"B",r:12402,e:23792,tr:201,re1:148,sb:495,pos:6,meet:1},
   ]},
   "1": { label: "Last 1 week — Nov 16 – Nov 22", rows: [
     {series:"6", sub:"E",r:14079,e:27517,tr:347,re1:272,sb:769,pos:14,meet:5},
@@ -427,24 +427,24 @@ const seriesByView = {
     {series:"5", sub:"B",r:0,   e:0,    tr:0,  re1:0, sb:0,  pos:1,meet:0},
   ]},
   "2": { label: "Last 2 weeks — Nov 9 – Nov 22", rows: [
-    {series:"6", sub:"E",r:30271,e:56452,tr:694,re1:546,sb:1302,pos:26,meet:6},
-    {series:"11",sub:"B",r:29401,e:58666,tr:471,re1:356,sb:1132,pos:30,meet:11},
+    {series:"6", sub:"E",r:30271,e:56452,tr:681,re1:546,sb:1299,pos:26,meet:6},
+    {series:"11",sub:"B",r:29401,e:58666,tr:460,re1:356,sb:1123,pos:30,meet:11},
     {series:"13",sub:"G",r:0,    e:15,   tr:0,  re1:0,  sb:0,   pos:0, meet:1},
     {series:"5", sub:"B",r:0,    e:0,    tr:0,  re1:0,  sb:0,   pos:1, meet:0},
     {series:"—", sub:"",r:0,    e:0,    tr:0,   re1:0,  sb:0,   pos:1, meet:1},
   ]},
   "3": { label: "Last 3 weeks — Nov 2 – Nov 22", rows: [
-    {series:"6", sub:"E",r:43413,e:80171, tr:1016,re1:813, sb:1813,pos:43,meet:13},
-    {series:"11",sub:"B",r:43382,e:85095, tr:701, re1:515, sb:1616,pos:43,meet:16},
+    {series:"6", sub:"E",r:43413,e:80171, tr:983, re1:813, sb:1813,pos:43,meet:13},
+    {series:"11",sub:"B",r:43382,e:85095, tr:669, re1:515, sb:1616,pos:43,meet:16},
     {series:"13",sub:"G",r:0,    e:58,    tr:6,   re1:0,   sb:0,   pos:2, meet:3},
     {series:"5", sub:"B",r:0,    e:0,     tr:0,   re1:0,   sb:0,   pos:1, meet:0},
     {series:"—", sub:"",r:0,    e:0,     tr:0,   re1:0,   sb:0,   pos:1, meet:1},
   ]},
   "4": { label: "Last 4 weeks — Oct 26 – Nov 22", rows: [
-    {series:"6", sub:"E",r:57768,e:107205,tr:1563,re1:1290,sb:2419,pos:71,meet:20},
-    {series:"11",sub:"B",r:57787,e:113720,tr:1058,re1:783, sb:2197,pos:61,meet:25},
+    {series:"6", sub:"E",r:57768,e:107205,tr:1512,re1:1290,sb:2419,pos:71,meet:20},
+    {series:"11",sub:"B",r:57787,e:113720,tr:997, re1:783, sb:2197,pos:61,meet:25},
     {series:"11",sub:"C",r:0,    e:0,     tr:1,   re1:0,   sb:0,   pos:0, meet:0},
-    {series:"13",sub:"G",r:1992, e:3789,  tr:108, re1:52,  sb:34,  pos:33,meet:5},
+    {series:"13",sub:"G",r:1992, e:3789,  tr:104, re1:52,  sb:34,  pos:33,meet:5},
     {series:"5", sub:"B",r:0,    e:0,     tr:0,   re1:0,   sb:0,   pos:1, meet:0},
     {series:"—", sub:"",r:0,    e:0,     tr:0,   re1:0,   sb:0,   pos:1, meet:1},
   ]},
@@ -456,7 +456,7 @@ const seriesByView = {
 // re-decomposed this cycle): see ANOMALY note above re: Riverguide/Accelo Brand showing zero SmartLead-side
 // volume individually in past per-client breakdowns.
 const jeffWeekly = [
-  {w:"2026-11-23",partial:false,prospects:5471,emails:9895, e1s:5471,replies:196,e1r:145,bounces:240,pos:0,meet:0},
+  {w:"2026-11-23",partial:false,prospects:5471,emails:9895, e1s:5471,replies:196,e1r:146,bounces:241,pos:0,meet:0},
   {w:"2026-11-16",partial:false,prospects:5378,emails:9897, e1s:5378,replies:117,e1r:84, bounces:227,pos:0,meet:0},
   {w:"2026-11-09",partial:false,prospects:6410,emails:11363,e1s:6410,replies:179,e1r:151,bounces:190,pos:4,meet:1},
   {w:"2026-11-02",partial:false,prospects:5338,emails:11269,e1s:5338,replies:132,e1r:94, bounces:240,pos:1,meet:1},
